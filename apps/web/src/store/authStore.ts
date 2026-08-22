@@ -16,8 +16,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   login: async (email, password) => {
     const { data } = await api.post<{ token: string; user: IAuthUser }>('/auth/login', {
-      email,
-      password,
+      email: email.trim(),
+      password: password.trim(),
     });
     localStorage.setItem('dt-token', data.token);
     set({ token: data.token, user: data.user });
