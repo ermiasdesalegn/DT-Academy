@@ -1,13 +1,13 @@
 import { Router } from 'express';
-import { listUsers } from '../controllers/userController';
+import { admitStudent } from '../controllers/admitController';
 import { authMiddleware, requireRole } from '../middleware/auth';
 import { asyncHandler } from '../middleware/asyncHandler';
 
-export const usersRouter = Router();
+export const studentsRouter = Router();
 
-usersRouter.get(
-  '/',
+studentsRouter.post(
+  '/admit',
   authMiddleware,
   requireRole(['DIRECTOR', 'IT_ADMIN', 'MANAGER']),
-  asyncHandler(listUsers)
+  asyncHandler(admitStudent)
 );

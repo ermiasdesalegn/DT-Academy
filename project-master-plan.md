@@ -1,151 +1,56 @@
-# DT-Academy: Enterprise Elementary School Portal (MERN Monorepo)
+# DT-Academy: Enterprise Elementary School Portal (Monorepo)
 
 ## 1. Project Architecture & Stack
+- **Database:** PostgreSQL hosted on Neon (using Prisma ORM). Schema lives in `apps/api/prisma/schema.prisma` (not `packages/database` yet).
+- **Backend (`apps/api`):** Node.js, Express.js, TypeScript, JWT. (Runs on `http://localhost:5000`)
+- **Frontend (`apps/web`):** React (Vite), TypeScript, Tailwind CSS, Shadcn UI. (Runs on `http://localhost:5173`)
 - **Architecture:** Monorepo using npm workspaces (`apps/api`, `apps/web`, `packages/types`, `packages/shared`).
-- **Backend:** Node.js, Express.js, TypeScript, Mongoose (MongoDB), JWT, bcrypt.
-- **Frontend (Web):** React (Vite), TypeScript, Tailwind CSS, Zustand (state), Lucide React (icons), Axios / React Query.
-- **Headless Prep (React Native Ready):** All business logic, custom API hooks (`useAuth`, `useGrades`, `usePayments`), and type definitions must live in `packages/types` and `packages/shared` or `/src/hooks` so they can be reused 1:1 in a mobile Expo app later. UI components must contain zero direct API fetching logic.
-- **Design Aesthetic:** Minimalist, clean, modern UI (inspired by Linear and modern SaaS). Generous whitespace, subtle slate borders, legible typography, and cards instead of dense spreadsheets.
+- **Nature of the App:** This is NOT a public marketing site. It is a closed System of Record and ERP for a K-12 campus of ~2,000 students.
 
 ---
 
-## 2. Role-Based Access Control (RBAC) - 6 Roles
+## 2. The "Two-Portal" UI Philosophy (Shadcn UI)
 
-1. **Director (Main Owner):** Full administrative authority. Final approval for class grade sheets. Final verification for manual tuition payments. School-wide analytics.
-2. **IT Admin:** User account provisioning, password resets, review and approval of "Grade Unlock" inquiries, verification of cash and bank transfer payments.
-3. **Manager:** Academic schedule configuration, class/section assignments, teacher-to-course mapping, student admissions, parent-student linkage.
-4. **Teacher:** Grade entry for assigned subjects/sections, daily roll-call attendance, class-specific notices, submits grade sheets for Director approval.
-5. **Parent:** View enrolled children's profiles, track academic performance and attendance (when active), submit tuition payments (Cash PNR / Bank Reference, Telebirr, M-Pesa), read announcements.
-6. **Student (K-8):** Simple, engaging read-only dashboard. View current approved grades, report cards, daily schedule, and notices. Strictly locked out of grade views if tuition is overdue (`isActive: false`).
+The frontend is strictly divided into two distinct layouts based on user roles.
 
----
+### A. The "Operations" Portal (Staff)
+- **Target Audience:** Director, IT Admin, Manager, Teacher.
+- **Layout Style:** Dark/professional sidebar. High information density.
+- **Key Shadcn Components:**
+  - Data tables for Admissions, Grade Queues, and Payment Verification.
+  - Command (Cmd+K) for searching ~2,000 students (later).
+  - Tabs for complex forms (e.g. Admissions).
+  - Badge for DRAFT vs APPROVED (and related states).
 
-## 3. Core Business Workflows & State Machines
-
-### A. Gradebook & Immutability Lifecycle
-1. **DRAFT:** Teacher creates/updates marks. Autosaves to DB.
-2. **PENDING_APPROVAL:** Teacher finalizes and submits the entire class grade sheet. Teacher editing becomes locked.
-3. **APPROVED (LOCKED):** Director reviews and approves. Records become immutable. Results become visible to active Students and Parents.
-4. **UNLOCK_REQUESTED:** If a teacher finds an error, they submit a formal `Inquiry` with a justification.
-5. **UNLOCKED:** IT Admin or Director approves the inquiry. Grade sheet status resets to `DRAFT` for correction.
-
-### B. Tuition Payment & Student Activation Lifecycle
-1. **Invoice Issued:** System / Manager sets term fee schedule.
-2. **Manual Payment (Cash / Bank Transfer):** Parent inputs the transaction reference / PNR and uploads a receipt. Status: `PENDING_VERIFICATION`. IT Admin or Director physically verifies and marks `VERIFIED`.
-3. **Digital Payment (Telebirr / M-Pesa):** Parent pays via gateway. Webhook (`/api/webhooks/payment`) verifies transaction and automatically sets status to `VERIFIED`.
-4. **Active Status Rule:** When payment is `VERIFIED`, `StudentProfile.isActive` is set to `true`. If overdue, `isActive` is set to `false`, hiding report cards behind a friendly payment reminder screen.
+### B. The "Family" Portal (Parents & Students)
+- **Target Audience:** Parents (primary) and Students (secondary).
+- **Layout Style:** Clean, calm, top-navigation bar. Mobile-first (no heavy sidebars).
+- **Key Shadcn Components:**
+  - Card for report cards and tuition status.
+  - Alert (destructive) for payment lockdown.
+  - Avatar and Select for the child switcher.
 
 ---
 
-## 4. Shared TypeScript Interfaces (`packages/types`)
+## 3. Core Business Workflows & Integrity Rules
 
-```typescript
-export type UserRole = 'DIRECTOR' | 'IT_ADMIN' | 'MANAGER' | 'TEACHER' | 'PARENT' | 'STUDENT';
+### A. Gradebook Immutability
+1. **Draft:** Teacher drafts marks (autosave).
+2. **Pending:** Teacher submits the whole class sheet. Editing stops for the teacher.
+3. **Approved (Locked):** Director approves. Grades become visible to active parents/students.
+4. **Unlock Requested:** Teacher files an inquiry; Admin/Director can unlock back to draft.
 
-export type GradeSheetStatus = 'DRAFT' | 'PENDING_APPROVAL' | 'APPROVED' | 'UNLOCK_REQUESTED';
+### B. Tuition & The "Active" Toggle
+- Unpaid or unverified fees → `student.isActive = false` → report card hidden; payment reminder shown.
+- Verified payment (cash PNR or future M-Pesa webhook) → `student.isActive = true` → academic data unhidden.
 
-export type PaymentMethod = 'CASH' | 'BANK_TRANSFER' | 'TELEBIRR' | 'MPESA';
+---
 
-export type PaymentStatus = 'PENDING' | 'VERIFIED' | 'REJECTED';
+## 4. Auth & portals
 
-export type AttendanceStatus = 'PRESENT' | 'ABSENT' | 'LATE' | 'EXCUSED';
+- No public sign-up. Office provisions accounts.
+- JWT login at `/api/auth/login`.
+- Staff → Operations layout. Parent/Student → Family layout.
+- RoleGate blocks the wrong portal URLs.
 
-export interface IUser {
-  _id: string;
-  name: string;
-  email: string;
-  phone?: string;
-  role: UserRole;
-  isActive: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface IStudentProfile {
-  _id: string;
-  userId: string;
-  studentIdNumber: string;
-  parentId: string;
-  gradeLevel: number; // e.g., 1 to 8
-  section: string;    // e.g., 'A', 'B'
-  academicYear: string;
-  isActive: boolean;
-}
-
-export interface ICourse {
-  _id: string;
-  name: string;
-  code: string;
-  gradeLevel: number;
-  section: string;
-  teacherId: string;
-  academicYear: string;
-}
-
-export interface IGradeSheet {
-  _id: string;
-  courseId: string;
-  teacherId: string;
-  academicYear: string;
-  term: number; // 1, 2, 3
-  status: GradeSheetStatus;
-  submittedAt?: Date;
-  approvedBy?: string;
-  approvedAt?: Date;
-}
-
-export interface IStudentResult {
-  _id: string;
-  gradeSheetId: string;
-  studentId: string;
-  testScore: number;
-  quizScore: number;
-  finalExamScore: number;
-  totalScore: number;
-  letterGrade: string;
-  behavioralRemark?: string;
-}
-
-export interface IPayment {
-  _id: string;
-  parentId: string;
-  studentId: string;
-  academicYear: string;
-  term: number;
-  amount: number;
-  currency: string; // 'ETB'
-  method: PaymentMethod;
-  referencePNR: string;
-  receiptUrl?: string;
-  status: PaymentStatus;
-  verifiedBy?: string;
-  verifiedAt?: Date;
-}
-
-export interface IAttendance {
-  _id: string;
-  studentId: string;
-  courseId: string;
-  date: Date;
-  status: AttendanceStatus;
-  recordedBy: string;
-}
-
-export interface IInquiry {
-  _id: string;
-  gradeSheetId: string;
-  teacherId: string;
-  reason: string;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED';
-  resolvedBy?: string;
-}
-
-export interface IAnnouncement {
-  _id: string;
-  title: string;
-  content: string;
-  audience: 'ALL' | 'PARENTS' | 'TEACHERS' | 'STUDENTS';
-  authorId: string;
-  gradeLevel?: number;
-  createdAt: Date;
-}
+Live Prisma enums/models in `apps/api` remain the source of truth until a dedicated schema migration is planned. The blueprint below is the product target (K–12 `gradeLevel`, optional email, phone uniqueness).

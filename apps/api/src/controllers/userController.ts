@@ -1,6 +1,7 @@
 import type { Request, Response } from 'express';
-import type { UserRole } from '@dt-academy/types';
-import { USER_ROLES, StudentProfile, User } from '../models';
+import type { Prisma } from '@prisma/client';
+import { USER_ROLES, type UserRole } from '@dt-academy/types';
+import { prisma } from '../lib/prisma';
 import { toAuthUser } from '../utils/toAuthUser';
 
 export async function listUsers(req: Request, res: Response): Promise<void> {
@@ -13,25 +14,29 @@ export async function listUsers(req: Request, res: Response): Promise<void> {
     return;
   }
 
-  const filter: Record<string, unknown> = {};
-  if (role) filter.role = role;
+  const where: Prisma.UserWhereInput = {};
+  if (role) where.role = role;
 
-  if (status === 'true' || status === 'active') filter.isActive = true;
-  if (status === 'false' || status === 'inactive') filter.isActive = false;
+  if (status === 'true' || status === 'active') where.isActive = true;
+  if (status === 'false' || status === 'inactive') where.isActive = false;
 
-  let gradeUserIds: string[] | undefined;
   if (gradeRaw) {
     const gradeLevel = Number(gradeRaw);
     if (!Number.isInteger(gradeLevel) || gradeLevel < 1 || gradeLevel > 8) {
       res.status(400).json({ message: 'grade must be an integer from 1 to 8' });
       return;
     }
-    const profiles = await StudentProfile.find({ gradeLevel }).select('userId');
-    gradeUserIds = profiles.map((p) => p.userId.toString());
-    filter._id = { $in: gradeUserIds };
-    if (!role) filter.role = 'STUDENT';
+    const profiles = await prisma.studentProfile.findMany({
+      where: { gradeLevel },
+      select: { userId: true },
+    });
+    where.id = { in: profiles.map((p) => p.userId) };
+    if (!role) where.role = 'STUDENT';
   }
 
-  const users = await User.find(filter).sort({ createdAt: -1 });
+  const users = await prisma.user.findMany({
+    where,
+    orderBy: { createdAt: 'desc' },
+  });
   res.json({ users: users.map(toAuthUser) });
 }

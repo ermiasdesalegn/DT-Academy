@@ -6,6 +6,15 @@ export type UserRole =
   | 'PARENT'
   | 'STUDENT';
 
+export const USER_ROLES: UserRole[] = [
+  'DIRECTOR',
+  'IT_ADMIN',
+  'MANAGER',
+  'TEACHER',
+  'PARENT',
+  'STUDENT',
+];
+
 export type GradeSheetStatus =
   | 'DRAFT'
   | 'PENDING_APPROVAL'
@@ -152,4 +161,25 @@ export interface ILoginRequest {
 export interface IAuthResponse {
   token: string;
   user: IAuthUser;
+}
+
+export interface IAdmitStudentRequest {
+  studentName: string;
+  grade: string;
+  section: string;
+  academicYear: string;
+  parentName: string;
+  parentPhone: string;
+  parentEmail?: string;
+  enableStudentLogin?: boolean;
+}
+
+export interface IAdmitStudentResponse {
+  parent: IAuthUser;
+  parentCreated: boolean;
+  parentTemporaryPassword?: string;
+  student: IAuthUser;
+  studentProfile: IStudentProfile;
+  studentLoginEnabled: boolean;
+  studentTemporaryPassword?: string;
 }

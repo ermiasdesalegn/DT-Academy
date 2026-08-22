@@ -1,0 +1,212 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  DIRECTOR
+  IT_ADMIN
+  MANAGER
+  TEACHER
+  PARENT
+  STUDENT
+}
+
+enum GradeSheetStatus {
+  DRAFT
+  PENDING_APPROVAL
+  APPROVED
+  UNLOCK_REQUESTED
+}
+
+enum PaymentMethod {
+  CASH
+  BANK_TRANSFER
+  TELEBIRR
+  MPESA
+}
+
+enum PaymentStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  EXCUSED
+}
+
+enum InquiryStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AnnouncementAudience {
+  ALL
+  PARENTS
+  TEACHERS
+  STUDENTS
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  phone        String?
+  role         UserRole
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  studentProfile     StudentProfile?
+  childrenAsParent   StudentProfile[] @relation("ParentChildren")
+  coursesTaught      Course[]
+  gradeSheets        GradeSheet[]     @relation("GradeSheetTeacher")
+  approvedSheets     GradeSheet[]     @relation("GradeSheetApprover")
+  paymentsAsParent   Payment[]        @relation("PaymentParent")
+  verifiedPayments   Payment[]        @relation("PaymentVerifier")
+  attendanceRecorded Attendance[]
+  inquiries          Inquiry[]        @relation("InquiryTeacher")
+  resolvedInquiries  Inquiry[]        @relation("InquiryResolver")
+  announcements      Announcement[]
+}
+
+model StudentProfile {
+  id              String  @id @default(cuid())
+  userId          String  @unique
+  user            User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  studentIdNumber String  @unique
+  parentId        String
+  parent          User    @relation("ParentChildren", fields: [parentId], references: [id])
+  gradeLevel      Int
+  section         String
+  academicYear    String
+  isActive        Boolean @default(false)
+
+  results    StudentResult[]
+  payments   Payment[]
+  attendance Attendance[]
+}
+
+model Course {
+  id           String @id @default(cuid())
+  name         String
+  code         String
+  gradeLevel   Int
+  section      String
+  teacherId    String
+  teacher      User   @relation(fields: [teacherId], references: [id])
+  academicYear String
+
+  gradeSheets GradeSheet[]
+  attendance  Attendance[]
+
+  @@unique([code, academicYear, gradeLevel, section])
+}
+
+model GradeSheet {
+  id           String           @id @default(cuid())
+  courseId     String
+  course       Course           @relation(fields: [courseId], references: [id])
+  teacherId    String
+  teacher      User             @relation("GradeSheetTeacher", fields: [teacherId], references: [id])
+  academicYear String
+  term         Int
+  status       GradeSheetStatus @default(DRAFT)
+  submittedAt  DateTime?
+  approvedById String?
+  approvedBy   User?            @relation("GradeSheetApprover", fields: [approvedById], references: [id])
+  approvedAt   DateTime?
+
+  results   StudentResult[]
+  inquiries Inquiry[]
+
+  @@unique([courseId, term, academicYear])
+}
+
+model StudentResult {
+  id               String         @id @default(cuid())
+  gradeSheetId     String
+  gradeSheet       GradeSheet     @relation(fields: [gradeSheetId], references: [id], onDelete: Cascade)
+  studentId        String
+  student          StudentProfile @relation(fields: [studentId], references: [id])
+  testScore        Float          @default(0)
+  quizScore        Float          @default(0)
+  finalExamScore   Float          @default(0)
+  totalScore       Float          @default(0)
+  letterGrade      String         @default("N/A")
+  behavioralRemark String?
+
+  @@unique([gradeSheetId, studentId])
+}
+
+model Payment {
+  id           String        @id @default(cuid())
+  parentId     String
+  parent       User          @relation("PaymentParent", fields: [parentId], references: [id])
+  studentId    String
+  student      StudentProfile @relation(fields: [studentId], references: [id])
+  academicYear String
+  term         Int
+  amount       Decimal       @db.Decimal(12, 2)
+  currency     String        @default("ETB")
+  method       PaymentMethod
+  referencePNR String
+  receiptUrl   String?
+  status       PaymentStatus @default(PENDING)
+  verifiedById String?
+  verifiedBy   User?         @relation("PaymentVerifier", fields: [verifiedById], references: [id])
+  verifiedAt   DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Attendance {
+  id          String           @id @default(cuid())
+  studentId   String
+  student     StudentProfile   @relation(fields: [studentId], references: [id])
+  courseId    String
+  course      Course           @relation(fields: [courseId], references: [id])
+  date        DateTime         @db.Date
+  status      AttendanceStatus
+  recordedById String
+  recordedBy  User             @relation(fields: [recordedById], references: [id])
+
+  @@unique([studentId, courseId, date])
+}
+
+model Inquiry {
+  id           String        @id @default(cuid())
+  gradeSheetId String
+  gradeSheet   GradeSheet    @relation(fields: [gradeSheetId], references: [id], onDelete: Cascade)
+  teacherId    String
+  teacher      User          @relation("InquiryTeacher", fields: [teacherId], references: [id])
+  reason       String
+  status       InquiryStatus @default(PENDING)
+  resolvedById String?
+  resolvedBy   User?         @relation("InquiryResolver", fields: [resolvedById], references: [id])
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Announcement {
+  id         String                @id @default(cuid())
+  title      String
+  content    String
+  audience   AnnouncementAudience
+  authorId   String
+  author     User                  @relation(fields: [authorId], references: [id])
+  gradeLevel Int?
+  createdAt  DateTime              @default(now())
+  updatedAt  DateTime              @updatedAt
+}

@@ -1,18 +1,18 @@
 import type { IAuthUser, UserRole } from '@dt-academy/types';
 
 export function toAuthUser(user: {
-  _id: { toString(): string };
+  id: string;
   name: string;
   email: string;
-  phone?: string;
+  phone?: string | null;
   role: UserRole;
   isActive: boolean;
 }): IAuthUser {
   return {
-    _id: user._id.toString(),
+    _id: user.id,
     name: user.name,
     email: user.email,
-    phone: user.phone,
+    phone: user.phone ?? undefined,
     role: user.role,
     isActive: user.isActive,
   };
