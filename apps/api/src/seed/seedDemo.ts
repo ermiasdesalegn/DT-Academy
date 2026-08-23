@@ -7,11 +7,11 @@
  * Shared password for every demo account: Demo1234!
  * Director is not overwritten (SEED_ADMIN_*).
  */
-import bcrypt from 'bcryptjs';
+import { MONTHLY_TUITION_ETB, letterFromTotal, termFromMonth } from '@dt-academy/types';
 import { Prisma } from '@prisma/client';
+import bcrypt from 'bcryptjs';
 import '../config/env';
 import { prisma } from '../lib/prisma';
-import { MONTHLY_TUITION_ETB, termFromMonth } from '@dt-academy/types';
 
 const YEAR = '2026';
 const ID_START = 1000;
@@ -81,11 +81,7 @@ function subjectsFor(grade: number): { name: string; code: string }[] {
 }
 
 function letter(total: number): string {
-  if (total >= 90) return 'A';
-  if (total >= 80) return 'B';
-  if (total >= 70) return 'C';
-  if (total >= 60) return 'D';
-  return 'F';
+  return letterFromTotal(total);
 }
 
 function scores(studentSeq: number, courseIndex: number, term: number) {

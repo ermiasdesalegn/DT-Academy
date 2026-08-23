@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { listMyChildren } from '../controllers/familyController';
+import { getMyStudent, listMyChildren } from '../controllers/familyController';
 import { authMiddleware, requireRole } from '../middleware/auth';
 import { asyncHandler } from '../middleware/asyncHandler';
 
@@ -11,3 +11,4 @@ familyRouter.get(
   requireRole(['PARENT']),
   asyncHandler(listMyChildren)
 );
+familyRouter.get('/me', authMiddleware, requireRole(['STUDENT']), asyncHandler(getMyStudent));
