@@ -1,5 +1,5 @@
-import { Link, Navigate, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
+import { Link, Navigate, useParams } from 'react-router-dom';
 import { BLOG_POSTS, getPost } from '../../lib/blogPosts';
 
 export function BlogPostPage() {

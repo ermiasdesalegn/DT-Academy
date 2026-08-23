@@ -1,6 +1,5 @@
 import type { IClassOverall, IClassOverallRow, IClassSubjectCol } from '@dt-academy/types';
 import { prisma } from './prisma';
-import { expectedSubjects } from './classSubjects';
 
 export async function buildClassOverall(input: {
   gradeLevel: number;
@@ -34,15 +33,14 @@ export async function buildClassOverall(input: {
   const term = input.term ?? terms[0] ?? 1;
   const termSheets = sheets.filter((s) => s.term === term);
 
-  const subjectNames =
-    courses.length > 0 ? courses.map((c) => c.name) : expectedSubjects(gradeLevel);
+  const subjectNames = courses.map((c) => c.name);
 
   const subjects: IClassSubjectCol[] = subjectNames.map((name) => {
     const course = courses.find((c) => c.name === name);
     const sheet = termSheets.find((s) => s.course.name === name);
     return {
       name,
-      teacherName: course?.teacher.name ?? 'To be assigned',
+      teacherName: course?.teacher.name ?? '',
       imported: Boolean(sheet && sheet.results.length > 0 && sheet.status !== 'DRAFT'),
     };
   });

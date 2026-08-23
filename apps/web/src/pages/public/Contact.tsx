@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from 'react';
 import { DEFAULT_SITE_CONTENT } from '@dt-academy/types';
+import { useState, type FormEvent } from 'react';
 import { useSiteContent } from '../../hooks/useSiteContent';
 
 export function ContactPage() {

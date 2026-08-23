@@ -154,6 +154,38 @@ body {
   box-shadow: 0 8px 24px -16px rgb(15 23 42 / 0.25);
 }
 
+.scene-3d {
+  perspective: 1400px;
+  perspective-origin: 50% 42%;
+}
+
+.scene-3d-deep {
+  perspective: 1800px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.hinge-slate {
+  transform-origin: top center;
+  will-change: transform;
+}
+
+.hero-window {
+  transform-origin: left center;
+  will-change: transform;
+}
+
+.fan-card {
+  transform-origin: center 80%;
+  will-change: transform;
+}
+
+.yearbook-tile {
+  will-change: transform;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -179,5 +211,13 @@ body {
   .card-lift:hover,
   .btn-press:hover {
     transform: none;
+  }
+
+  .hero-window,
+  .hinge-slate,
+  .fan-card,
+  .yearbook-tile {
+    transform: none !important;
+    will-change: auto;
   }
 }

@@ -1,5 +1,6 @@
-import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
-import { Bell, Clock, GraduationCap, MapPin, Phone } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Clock, GraduationCap, MapPin, Phone } from 'lucide-react';
 import { DEFAULT_SITE_CONTENT } from '@dt-academy/types';
 import { useAuthStore } from '../../store/authStore';
 import { homePath } from '../../lib/homePath';
@@ -17,6 +18,10 @@ const NAV = [
 
 export function WebsiteLayout() {
   const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
+  const navigate = useNavigate();
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef<HTMLDivElement>(null);
   const { pathname } = useLocation();
   const isPortal = pathname.startsWith('/portal');
   const { data: site = DEFAULT_SITE_CONTENT } = useSiteContent();
@@ -26,6 +31,14 @@ export function WebsiteLayout() {
     .join('')
     .slice(0, 2)
     .toUpperCase();
+
+  useEffect(() => {
+    function onDocClick(e: MouseEvent) {
+      if (!profileRef.current?.contains(e.target as Node)) setProfileOpen(false);
+    }
+    document.addEventListener('mousedown', onDocClick);
+    return () => document.removeEventListener('mousedown', onDocClick);
+  }, []);
 
   return (
     <div className="flex min-h-screen flex-col bg-white text-stone-800">
@@ -55,20 +68,47 @@ export function WebsiteLayout() {
                 <Link to={homePath(user.role)} className="text-xs font-semibold uppercase tracking-wide text-white/90 hover:text-white">
                   Dashboard
                 </Link>
-                <button type="button" className="relative rounded-full p-2 text-white/80 hover:bg-white/10" aria-label="Notifications">
-                  <Bell size={18} />
-                  <span className="absolute right-1.5 top-1.5 h-1.5 w-1.5 rounded-full bg-red-500" />
-                </button>
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback className="bg-teal-700 text-[10px] text-white">{initials || 'U'}</AvatarFallback>
-                </Avatar>
+                <div className="relative" ref={profileRef}>
+                  <button
+                    type="button"
+                    className="rounded-full ring-offset-2 ring-offset-[#1A2B3C] focus:outline-none focus:ring-2 focus:ring-white/50"
+                    aria-expanded={profileOpen}
+                    aria-haspopup="menu"
+                    aria-label="Account menu"
+                    onClick={() => setProfileOpen((open) => !open)}
+                  >
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback className="bg-teal-700 text-[10px] text-white">{initials || 'U'}</AvatarFallback>
+                    </Avatar>
+                  </button>
+                  {profileOpen ? (
+                    <div
+                      role="menu"
+                      className="absolute right-0 mt-2 w-48 overflow-hidden rounded-xl border border-stone-200 bg-white py-1 text-stone-800 shadow-lg"
+                    >
+                      <p className="truncate px-3 py-2 text-xs text-stone-500">{user.name}</p>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        className="w-full px-3 py-2 text-left text-sm font-medium hover:bg-stone-50"
+                        onClick={() => {
+                          setProfileOpen(false);
+                          logout();
+                          navigate('/login');
+                        }}
+                      >
+                        Sign out
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
               </>
             ) : (
               <Link
                 to="/login"
                 className="rounded-full bg-white px-4 py-2 text-xs font-semibold uppercase tracking-wide text-[#1A2B3C] hover:bg-stone-100"
               >
-                Sign In / Sign Up
+                Sign In
               </Link>
             )}
           </div>

@@ -1,9 +1,9 @@
 import axios from 'axios';
+import { GraduationCap } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { GraduationCap } from 'lucide-react';
-import { useAuthStore } from '../store/authStore';
 import { homePath } from '../lib/homePath';
+import { useAuthStore } from '../store/authStore';
 
 export function LoginPage() {
   const login = useAuthStore((s) => s.login);

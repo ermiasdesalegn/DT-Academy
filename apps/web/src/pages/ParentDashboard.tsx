@@ -1,13 +1,12 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { BookOpen, ChevronRight, Users, Wallet } from 'lucide-react';
-import type { IFamilyChild, IFamilyResult, IFamilyTeacher, ITuitionMonth } from '@dt-academy/types';
+import type { IFamilyChild, IFamilyTeacher, ITuitionMonth } from '@dt-academy/types';
 import { DEFAULT_SITE_CONTENT } from '@dt-academy/types';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useFamilyChildren } from '../hooks/useFamily';
 import { useSiteContent } from '../hooks/useSiteContent';
 import { BLOG_POSTS } from '../lib/blogPosts';
-import { expectedSubjects } from '../lib/classSubjects';
 import { gradeLabel } from '../lib/labels';
 import { PHOTOS } from '../lib/schoolPhotos';
 import { useAuthStore } from '../store/authStore';
@@ -107,8 +106,7 @@ function ChildWorkspace({
   onTab: (t: Tab) => void;
   officePhone: string;
 }) {
-  const teachers = useMemo(() => roster(child), [child]);
-  const report = useMemo(() => reportRows(child, teachers), [child, teachers]);
+  const teachers = child.teachers ?? [];
 
   return (
     <div>
@@ -153,7 +151,18 @@ function ChildWorkspace({
       </div>
 
       {tab === 'class' ? <ClassTab teachers={teachers} assigned={Boolean(child.teachers?.length)} /> : null}
-      {tab === 'report' ? <ReportTab rows={report} hasOfficial={Boolean(child.results?.length)} /> : null}
+      {tab === 'report' ? (
+        <ReportTab
+          rows={(child.results ?? []).map((r) => ({
+            subject: r.subject,
+            teacherName: r.teacherName,
+            letterGrade: r.letterGrade,
+            totalScore: String(r.totalScore),
+            term: `Term ${r.term}`,
+          }))}
+          hasOfficial={Boolean(child.results?.length)}
+        />
+      ) : null}
       {tab === 'payment' ? <PaymentTab child={child} /> : null}
       {tab === 'notices' ? <NoticesTab phone={officePhone} /> : null}
     </div>
@@ -350,40 +359,11 @@ function NoticesTab({ phone }: { phone: string }) {
   );
 }
 
-function roster(child: IFamilyChild): IFamilyTeacher[] {
-  if (child.teachers?.length) return child.teachers;
-  return expectedSubjects(child.profile.gradeLevel).map((subject) => ({
-    subject,
-    teacherName: 'To be assigned',
-  }));
-}
-
-function reportRows(child: IFamilyChild, teachers: IFamilyTeacher[]) {
-  const official = child.results ?? [];
-  if (official.length) {
-    return official.map((r: IFamilyResult) => ({
-      subject: r.subject,
-      teacherName: r.teacherName,
-      letterGrade: r.letterGrade,
-      totalScore: String(r.totalScore),
-      term: `Term ${r.term}`,
-    }));
-  }
-  return teachers.map((t) => ({
-    subject: t.subject,
-    teacherName: t.teacherName,
-    letterGrade: '—',
-    totalScore: '',
-    term: 'Term 1',
-  }));
-}
-
 function dueAmount(rows: ITuitionMonth[]) {
   return rows.filter((r) => r.status === 'UNPAID').reduce((sum, r) => sum + r.totalDueEtb, 0);
 }
 
 function initials(name: string) {
-  if (name === 'To be assigned') return '—';
   return name
     .split(' ')
     .map((p) => p[0])

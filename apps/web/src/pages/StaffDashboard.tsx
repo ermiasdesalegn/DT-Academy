@@ -4,12 +4,6 @@ import { useInsights } from '../hooks/useInsights';
 import { usePayments, useVerifyPayment } from '../hooks/usePayments';
 import { methodLabel } from '../lib/labels';
 
-const GRADE_QUEUE = [
-  { course: 'Grade 4A - Mathematics', teacher: 'Mr. Smith' },
-  { course: 'Grade 8 - English', teacher: 'Ms. Rachel' },
-  { course: 'Grade 1B - Science', teacher: 'Mrs. Abeba' },
-];
-
 export function StaffDashboard() {
   const payments = usePayments('PENDING');
   const insights = useInsights();
@@ -34,28 +28,8 @@ export function StaffDashboard() {
                 Grade sheets submitted by teachers awaiting Director sign-off.
               </p>
             </div>
-            <Button type="button" variant="ghost" size="sm" className="shrink-0 text-slate-600">
-              View all
-            </Button>
           </div>
-          <ul className="mt-5 divide-y divide-gray-100">
-            {GRADE_QUEUE.map((row) => (
-              <li key={row.course} className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-slate-900">{row.course}</p>
-                  <p className="text-xs text-slate-500">{row.teacher}</p>
-                </div>
-                <div className="flex shrink-0 items-center gap-2">
-                  <Badge className="border-0 bg-amber-100 font-medium text-amber-800 hover:bg-amber-100">
-                    Pending
-                  </Badge>
-                  <Button type="button" variant="outline" size="sm">
-                    Review
-                  </Button>
-                </div>
-              </li>
-            ))}
-          </ul>
+          <p className="mt-5 text-sm text-slate-500">No class sheets are waiting. They appear here after a teacher submits.</p>
         </section>
 
         <section className="rounded-2xl border border-gray-200 bg-white p-6">
@@ -66,9 +40,6 @@ export function StaffDashboard() {
                 Cash at the office and bank receipts still need a stamp. Telebirr and M-Pesa confirm themselves.
               </p>
             </div>
-            <Button type="button" variant="ghost" size="sm" className="shrink-0 text-slate-600">
-              View all
-            </Button>
           </div>
           {payments.isLoading ? (
             <p className="mt-5 text-sm text-slate-500">Loading payments…</p>
@@ -113,9 +84,6 @@ export function StaffDashboard() {
             <h2 className="text-sm font-semibold text-slate-900">Enrollment &amp; Staff</h2>
             <p className="mt-1 text-sm text-slate-500">Breakdown by student status and staff allocation.</p>
           </div>
-          <Button type="button" variant="ghost" size="sm" className="shrink-0 text-slate-600">
-            Detailed Report
-          </Button>
         </div>
         <div className="mt-6 flex flex-col gap-8 sm:flex-row sm:divide-x sm:divide-gray-100">
           <div className="flex-1 sm:pr-8">

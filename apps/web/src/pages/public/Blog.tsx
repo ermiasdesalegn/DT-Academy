@@ -1,6 +1,6 @@
+import { ArrowUpRight } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowUpRight } from 'lucide-react';
 import { BLOG_CATEGORIES, BLOG_POSTS, type BlogCategory } from '../../lib/blogPosts';
 
 export function BlogPage() {

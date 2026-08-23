@@ -25,6 +25,7 @@ import { AdmitStudentPage } from './pages/AdmitStudentPage';
 import { WebsiteContentPage } from './pages/WebsiteContentPage';
 import { TuitionOfficePage } from './pages/TuitionOfficePage';
 import { ClassesOfficePage } from './pages/ClassesOfficePage';
+import { ScreenLoader } from './components/ScreenLoader';
 
 function Boot() {
   const hydrate = useAuthStore((s) => s.hydrate);
@@ -35,7 +36,7 @@ function Boot() {
   }, [hydrate]);
 
   if (!ready) {
-    return <div className="p-10 text-center text-sm text-slate-500">Loading…</div>;
+    return <ScreenLoader label="Checking your session" />;
   }
 
   return <Outlet />;

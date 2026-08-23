@@ -231,7 +231,6 @@ export interface IFamilyChild {
   tuitionMonths: ITuitionMonth[];
   teachers: IFamilyTeacher[];
   results: IFamilyResult[];
-  resultsLocked: boolean;
 }
 
 export interface IFamilyTeacher {

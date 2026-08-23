@@ -2,8 +2,8 @@ export function AcademicsPage() {
   return (
     <div className="min-h-screen bg-white">
       <div className="mx-auto max-w-5xl px-4 py-20 sm:px-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-800">Academics</p>
-        <h1 className="mt-3 font-serif text-4xl text-stone-900">Early years, primary, and Prep</h1>
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-600">Academics</p>
+        <h1 className="mt-3 text-4xl font-bold tracking-tight text-slate-900">Early years, primary, and Prep</h1>
         <div className="mt-12 grid gap-10 md:grid-cols-3">
           {[
             ['Early years (KG)', 'Play, language, and first classroom habits. Pickup at the KG gate. Parent portal only.'],

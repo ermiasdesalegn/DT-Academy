@@ -85,7 +85,6 @@ export async function listMyChildren(req: Request, res: Response): Promise<void>
             letterGrade: r.letterGrade,
             totalScore: r.totalScore,
           })),
-      resultsLocked: false,
     };
   });
 

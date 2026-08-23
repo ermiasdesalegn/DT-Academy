@@ -4,8 +4,8 @@ export function AdmissionsPage() {
   return (
     <div className="min-h-screen bg-white">
       <div className="mx-auto max-w-3xl px-4 py-20 sm:px-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-teal-800">Admissions</p>
-        <h1 className="mt-3 font-serif text-4xl text-stone-900">How to apply</h1>
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-600">Admissions</p>
+        <h1 className="mt-3 text-4xl font-bold tracking-tight text-slate-900">How to apply</h1>
         <ol className="mt-8 list-decimal space-y-4 pl-5 text-stone-600">
           <li>Visit the office or send an inquiry through Contact.</li>
           <li>Bring the child’s name, grade, section preference, and a parent phone.</li>
@@ -21,7 +21,7 @@ export function AdmissionsPage() {
           Fees are recorded as cash PNR or bank transfer and verified by the office. Until then the student stays
           locked. After you are admitted, submit a receipt from the family portal.
         </p>
-        <Link to="/contact" className="mt-10 inline-block rounded-full bg-teal-800 px-5 py-2.5 text-sm font-medium text-white">
+        <Link to="/contact" className="mt-10 inline-block rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-blue-700">
           Contact the office
         </Link>
       </div>
