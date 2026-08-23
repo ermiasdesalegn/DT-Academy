@@ -75,10 +75,12 @@ model User {
   approvedSheets     GradeSheet[]     @relation("GradeSheetApprover")
   paymentsAsParent   Payment[]        @relation("PaymentParent")
   verifiedPayments   Payment[]        @relation("PaymentVerifier")
+  paymentStatusLogs  PaymentStatusLog[]
   attendanceRecorded Attendance[]
   inquiries          Inquiry[]        @relation("InquiryTeacher")
   resolvedInquiries  Inquiry[]        @relation("InquiryResolver")
   announcements      Announcement[]
+  homerooms          Homeroom[]
 }
 
 model StudentProfile {
@@ -96,6 +98,7 @@ model StudentProfile {
   results    StudentResult[]
   payments   Payment[]
   attendance Attendance[]
+  statusLogs PaymentStatusLog[]
 }
 
 model Course {
@@ -112,6 +115,17 @@ model Course {
   attendance  Attendance[]
 
   @@unique([code, academicYear, gradeLevel, section])
+}
+
+model Homeroom {
+  id           String @id @default(cuid())
+  gradeLevel   Int
+  section      String
+  academicYear String
+  teacherId    String
+  teacher      User   @relation(fields: [teacherId], references: [id])
+
+  @@unique([gradeLevel, section, academicYear])
 }
 
 model GradeSheet {
@@ -158,10 +172,14 @@ model Payment {
   student      StudentProfile @relation(fields: [studentId], references: [id])
   academicYear String
   term         Int
-  amount       Decimal       @db.Decimal(12, 2)
+  month        Int            @default(0)
+  coveredMonths String        @default("")
+  amount       Decimal        @db.Decimal(12, 2)
   currency     String        @default("ETB")
   method       PaymentMethod
   referencePNR String
+  providerRef  String?
+  payerPhone   String?
   receiptUrl   String?
   status       PaymentStatus @default(PENDING)
   verifiedById String?
@@ -169,6 +187,20 @@ model Payment {
   verifiedAt   DateTime?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
+}
+
+model PaymentStatusLog {
+  id           String   @id @default(cuid())
+  studentId    String
+  student      StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  academicYear String
+  month        Int
+  fromStatus   String
+  toStatus     String
+  note         String?
+  actorId      String
+  actor        User     @relation(fields: [actorId], references: [id])
+  createdAt    DateTime @default(now())
 }
 
 model Attendance {
@@ -209,4 +241,21 @@ model Announcement {
   gradeLevel Int?
   createdAt  DateTime              @default(now())
   updatedAt  DateTime              @updatedAt
+}
+
+model SiteContent {
+  id          String   @id @default("default")
+  schoolName  String
+  city        String
+  country     String
+  addressLine String
+  phone       String
+  hours       String
+  heroTagline String
+  heroTitle   String
+  heroBlurb   String   @db.Text
+  welcomeBody String   @db.Text
+  aboutBody   String   @db.Text
+  footerBlurb String   @db.Text
+  updatedAt   DateTime @updatedAt
 }

@@ -72,7 +72,7 @@ export function DirectorDashboard() {
 
       <Card className="rounded-2xl border-slate-200/80 shadow-none">
         <CardHeader className="flex-row items-center justify-between space-y-0 pb-4">
-          <CardTitle className="text-base">Campus insights</CardTitle>
+          <CardTitle className="text-base">Enrollment & Staff</CardTitle>
           <Badge variant="outline" className="font-normal">
             This term
           </Badge>

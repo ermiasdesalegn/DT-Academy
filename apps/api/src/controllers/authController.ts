@@ -6,7 +6,7 @@ import { prisma } from '../lib/prisma';
 import { env } from '../config/env';
 import { toAuthUser } from '../utils/toAuthUser';
 
-const REGISTER_ALLOWED: UserRole[] = ['DIRECTOR', 'IT_ADMIN', 'MANAGER'];
+const REGISTER_ALLOWED: UserRole[] = ['DIRECTOR', 'IT_ADMIN', 'MANAGER', 'TEACHER'];
 
 function signToken(id: string, role: UserRole): string {
   const options: SignOptions = { expiresIn: env.jwtExpiresIn as SignOptions['expiresIn'] };
@@ -21,8 +21,8 @@ export async function register(req: Request, res: Response): Promise<void> {
     return;
   }
 
-  if (!USER_ROLES.includes(role)) {
-    res.status(400).json({ message: 'Invalid role' });
+  if (!USER_ROLES.includes(role) || !REGISTER_ALLOWED.includes(role)) {
+    res.status(400).json({ message: 'Office can only create staff accounts here' });
     return;
   }
 
@@ -48,14 +48,15 @@ export async function register(req: Request, res: Response): Promise<void> {
 }
 
 export async function login(req: Request, res: Response): Promise<void> {
-  const { email, password } = req.body as ILoginRequest;
+  const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+  const password = typeof req.body?.password === 'string' ? req.body.password.trim() : '';
 
   if (!email || !password) {
     res.status(400).json({ message: 'email and password are required' });
     return;
   }
 
-  const user = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
+  const user = await prisma.user.findUnique({ where: { email } });
   if (!user) {
     res.status(401).json({ message: 'Invalid credentials' });
     return;

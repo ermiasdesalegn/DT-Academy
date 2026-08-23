@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { listUsers } from '../controllers/userController';
+import { listUsers, setUserPassword } from '../controllers/userController';
 import { authMiddleware, requireRole } from '../middleware/auth';
 import { asyncHandler } from '../middleware/asyncHandler';
 
@@ -10,4 +10,11 @@ usersRouter.get(
   authMiddleware,
   requireRole(['DIRECTOR', 'IT_ADMIN', 'MANAGER']),
   asyncHandler(listUsers)
+);
+
+usersRouter.post(
+  '/:id/password',
+  authMiddleware,
+  requireRole(['DIRECTOR', 'IT_ADMIN', 'MANAGER']),
+  asyncHandler(setUserPassword)
 );
