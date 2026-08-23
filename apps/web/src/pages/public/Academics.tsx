@@ -1,18 +1,23 @@
+import { useT } from '../../hooks/useT';
+
 export function AcademicsPage() {
+  const t = useT();
+  const bands = [
+    [t('academics.earlyT'), t('academics.earlyB')],
+    [t('academics.primaryT'), t('academics.primaryB')],
+    [t('academics.prepT'), t('academics.prepB')],
+  ];
+
   return (
     <div className="min-h-screen bg-white">
       <div className="mx-auto max-w-5xl px-4 py-20 sm:px-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-600">Academics</p>
-        <h1 className="mt-3 text-4xl font-bold tracking-tight text-slate-900">Early years, primary, and Prep</h1>
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-blue-600">{t('academics.eyebrow')}</p>
+        <h1 className="mt-3 text-4xl font-bold tracking-tight text-slate-900">{t('academics.title')}</h1>
         <div className="mt-12 grid gap-10 md:grid-cols-3">
-          {[
-            ['Early years (KG)', 'Play, language, and first classroom habits. Pickup at the KG gate. Parent portal only.'],
-            ['Primary (G1–G8)', 'Core literacy, numeracy, and subjects. G1–G4 stay on the family login.'],
-            ['Secondary / Prep', 'Exam years. Student login may be enabled from Grade 5 when the office turns it on.'],
-          ].map(([t, b]) => (
-            <article key={t} className="border-t border-stone-200 pt-6">
-              <h2 className="font-serif text-2xl text-stone-900">{t}</h2>
-              <p className="mt-3 text-sm leading-relaxed text-stone-600">{b}</p>
+          {bands.map(([title, body]) => (
+            <article key={title} className="border-t border-stone-200 pt-6">
+              <h2 className="font-serif text-2xl text-stone-900">{title}</h2>
+              <p className="mt-3 text-sm leading-relaxed text-stone-600">{body}</p>
             </article>
           ))}
         </div>

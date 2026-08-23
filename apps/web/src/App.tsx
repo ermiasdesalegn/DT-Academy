@@ -1,5 +1,5 @@
 import { Navigate, Outlet, Route, Routes } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { WebsiteLayout } from './components/layouts/WebsiteLayout';
 import { ProtectedRoute } from './components/layouts/ProtectedRoute';
 import { StaffLayout } from './components/layouts/StaffLayout';
@@ -18,6 +18,10 @@ import { BlogPostPage } from './pages/public/BlogPost';
 import { FaqPage } from './pages/public/Faq';
 import { StaffDashboard } from './pages/StaffDashboard';
 import { TeacherDashboard } from './pages/TeacherDashboard';
+import { GradeSheetPage } from './pages/GradeSheetPage';
+import { AttendancePage } from './pages/AttendancePage';
+import { SheetsQueuePage } from './pages/SheetsQueuePage';
+import { AnnouncementsPage } from './pages/AnnouncementsPage';
 import { FamilyDashboard } from './pages/FamilyDashboard';
 import { PayTuitionPage } from './pages/PayTuitionPage';
 import { AdminDashboard } from './pages/AdminDashboard';
@@ -26,8 +30,16 @@ import { WebsiteContentPage } from './pages/WebsiteContentPage';
 import { TuitionOfficePage } from './pages/TuitionOfficePage';
 import { ClassesOfficePage } from './pages/ClassesOfficePage';
 import { ScreenLoader } from './components/ScreenLoader';
+import { useLocaleStore } from './store/localeStore';
+import { useT } from './hooks/useT';
+
+function LocaleRoot({ children }: { children: ReactNode }) {
+  useLocaleStore((s) => s.locale);
+  return children;
+}
 
 function Boot() {
+  const t = useT();
   const hydrate = useAuthStore((s) => s.hydrate);
   const [ready, setReady] = useState(false);
 
@@ -36,7 +48,7 @@ function Boot() {
   }, [hydrate]);
 
   if (!ready) {
-    return <ScreenLoader label="Checking your session" />;
+    return <ScreenLoader label={t('boot.session')} />;
   }
 
   return <Outlet />;
@@ -50,6 +62,7 @@ function GuestOnly() {
 
 export default function App() {
   return (
+    <LocaleRoot>
     <Routes>
       <Route element={<Boot />}>
         <Route element={<ProtectedRoute />}>
@@ -59,15 +72,22 @@ export default function App() {
             </Route>
             <Route element={<RoleGate allow={['TEACHER']} />}>
               <Route path="/admin/teaching" element={<TeacherDashboard />} />
+              <Route path="/admin/teaching/sheets/:courseId" element={<GradeSheetPage />} />
+              <Route path="/admin/teaching/attendance" element={<AttendancePage />} />
+              <Route path="/admin/teaching/attendance/:courseId" element={<AttendancePage />} />
             </Route>
             <Route element={<RoleGate allow={['DIRECTOR', 'IT_ADMIN']} />}>
               <Route path="/admin/website" element={<WebsiteContentPage />} />
-              <Route path="/admin/tuition" element={<TuitionOfficePage />} />
               <Route path="/admin/classes" element={<ClassesOfficePage />} />
+            </Route>
+            <Route element={<RoleGate allow={['DIRECTOR']} />}>
+              <Route path="/admin/sheets" element={<SheetsQueuePage />} />
             </Route>
             <Route element={<RoleGate allow={['DIRECTOR', 'IT_ADMIN', 'MANAGER']} />}>
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/admissions" element={<AdmitStudentPage />} />
+              <Route path="/admin/tuition" element={<TuitionOfficePage />} />
+              <Route path="/admin/announcements" element={<AnnouncementsPage />} />
             </Route>
           </Route>
         </Route>
@@ -106,5 +126,6 @@ export default function App() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
+    </LocaleRoot>
   );
 }

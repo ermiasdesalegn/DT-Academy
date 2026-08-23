@@ -5,18 +5,21 @@ import { DEFAULT_SITE_CONTENT } from '@dt-academy/types';
 import { useAuthStore } from '../../store/authStore';
 import { homePath } from '../../lib/homePath';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { useSiteContent } from '../../hooks/useSiteContent';
+import { useLocalizedSite } from '../../hooks/useLocalizedSite';
+import { useT } from '../../hooks/useT';
+import { LanguageSwitch } from '../LanguageSwitch';
 
 const NAV = [
-  { to: '/', label: 'Home', end: true },
-  { to: '/about', label: 'About Us' },
-  { to: '/service', label: 'Service' },
-  { to: '/blog', label: 'Blog' },
-  { to: '/contact', label: 'Contact Us' },
-  { to: '/faq', label: 'FAQ' },
+  { to: '/', labelKey: 'nav.home', end: true },
+  { to: '/about', labelKey: 'nav.about' },
+  { to: '/service', labelKey: 'nav.service' },
+  { to: '/blog', labelKey: 'nav.blog' },
+  { to: '/contact', labelKey: 'nav.contact' },
+  { to: '/faq', labelKey: 'nav.faq' },
 ];
 
 export function WebsiteLayout() {
+  const t = useT();
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
@@ -24,7 +27,7 @@ export function WebsiteLayout() {
   const profileRef = useRef<HTMLDivElement>(null);
   const { pathname } = useLocation();
   const isPortal = pathname.startsWith('/portal');
-  const { data: site = DEFAULT_SITE_CONTENT } = useSiteContent();
+  const { data: site = DEFAULT_SITE_CONTENT } = useLocalizedSite();
   const initials = user?.name
     .split(' ')
     .map((p) => p[0])
@@ -42,7 +45,7 @@ export function WebsiteLayout() {
 
   return (
     <div className="flex min-h-screen flex-col bg-white text-stone-800">
-      <header className="sticky top-0 z-40 bg-[#1A2B3C] text-white">
+      <header className="sticky top-0 z-40 border-b border-white/10 bg-[#1A2B3C]/95 text-white backdrop-blur-md">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
           <Link to="/" className="flex items-center gap-2.5">
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-[#1A2B3C]">
@@ -56,17 +59,20 @@ export function WebsiteLayout() {
                 key={item.to}
                 to={item.to}
                 end={item.end}
-                className={({ isActive }) => (isActive ? 'text-white' : 'hover:text-white')}
+                className={({ isActive }) =>
+                  `nav-link ${isActive ? 'text-white' : 'hover:text-white'}`
+                }
               >
-                {item.label}
+                {t(item.labelKey)}
               </NavLink>
             ))}
           </nav>
           <div className="flex items-center gap-3">
+            <LanguageSwitch variant="dark" />
             {user ? (
               <>
                 <Link to={homePath(user.role)} className="text-xs font-semibold uppercase tracking-wide text-white/90 hover:text-white">
-                  Dashboard
+                  {t('common.dashboard')}
                 </Link>
                 <div className="relative" ref={profileRef}>
                   <button
@@ -74,7 +80,7 @@ export function WebsiteLayout() {
                     className="rounded-full ring-offset-2 ring-offset-[#1A2B3C] focus:outline-none focus:ring-2 focus:ring-white/50"
                     aria-expanded={profileOpen}
                     aria-haspopup="menu"
-                    aria-label="Account menu"
+                    aria-label={t('common.accountMenu')}
                     onClick={() => setProfileOpen((open) => !open)}
                   >
                     <Avatar className="h-8 w-8">
@@ -97,7 +103,7 @@ export function WebsiteLayout() {
                           navigate('/login');
                         }}
                       >
-                        Sign out
+                        {t('common.signOut')}
                       </button>
                     </div>
                   ) : null}
@@ -108,7 +114,7 @@ export function WebsiteLayout() {
                 to="/login"
                 className="rounded-full bg-white px-4 py-2 text-xs font-semibold uppercase tracking-wide text-[#1A2B3C] hover:bg-stone-100"
               >
-                Sign In
+                {t('common.signIn')}
               </Link>
             )}
           </div>
@@ -123,7 +129,7 @@ export function WebsiteLayout() {
                 `shrink-0 rounded-full px-3 py-1 text-[11px] font-semibold uppercase ${isActive ? 'bg-white text-[#1A2B3C]' : 'text-white/80'}`
               }
             >
-              {item.label}
+              {t(item.labelKey)}
             </NavLink>
           ))}
         </nav>
@@ -144,39 +150,39 @@ export function WebsiteLayout() {
             <p className="mt-4 text-sm leading-relaxed text-white/60">{site.footerBlurb}</p>
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-red-400">Explore</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-red-400">{t('footer.explore')}</p>
             <ul className="mt-4 space-y-2 text-sm text-white/70">
               {NAV.map((item) => (
                 <li key={item.to}>
                   <Link to={item.to} className="hover:text-white">
-                    {item.label}
+                    {t(item.labelKey)}
                   </Link>
                 </li>
               ))}
             </ul>
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-red-400">Admissions</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-red-400">{t('footer.admissions')}</p>
             <ul className="mt-4 space-y-2 text-sm text-white/70">
               <li>
                 <Link to="/admissions" className="hover:text-white">
-                  How to apply
+                  {t('nav.howToApply')}
                 </Link>
               </li>
               <li>
                 <Link to="/academics" className="hover:text-white">
-                  Academics
+                  {t('nav.academics')}
                 </Link>
               </li>
               <li>
                 <Link to="/login" className="hover:text-white">
-                  Family &amp; staff login
+                  {t('nav.familyStaffLogin')}
                 </Link>
               </li>
             </ul>
           </div>
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-red-400">Visit</p>
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-red-400">{t('footer.visit')}</p>
             <ul className="mt-4 space-y-3 text-sm text-white/70">
               <li className="flex gap-2">
                 <MapPin size={16} className="mt-0.5 shrink-0 text-red-400" />
@@ -194,7 +200,7 @@ export function WebsiteLayout() {
           </div>
         </div>
         <div className="border-t border-white/10 px-4 py-5 text-center text-xs text-white/45 sm:px-6">
-          © 2026 DT Academy. Enrolment is handled by the office.
+          {t('footer.copyright')}
         </div>
       </footer>
       )}

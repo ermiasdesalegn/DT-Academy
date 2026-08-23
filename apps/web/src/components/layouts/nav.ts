@@ -21,48 +21,64 @@ export function isFamilyRole(role: UserRole): boolean {
   return role === 'PARENT' || role === 'STUDENT';
 }
 
-export type NavItem = { to: string; label: string; icon: LucideIcon; end?: boolean };
+export type NavItem = { to: string; labelKey: string; icon: LucideIcon; end?: boolean };
 
 export const NAV: Record<UserRole, NavItem[]> = {
   DIRECTOR: [
-    { to: '/admin/dashboard', label: 'Overview', icon: LayoutDashboard, end: true },
-    { to: '/admin/classes', label: 'Classes', icon: GraduationCap },
-    { to: '/admin', label: 'People', icon: Users, end: true },
-    { to: '/admin/admissions', label: 'Admissions', icon: UserPlus },
-    { to: '/admin/website', label: 'Website', icon: Globe },
-    { to: '/admin/tuition', label: 'Tuition', icon: CreditCard },
+    { to: '/admin/dashboard', labelKey: 'nav.overview', icon: LayoutDashboard, end: true },
+    { to: '/admin/classes', labelKey: 'nav.classes', icon: GraduationCap },
+    { to: '/admin', labelKey: 'nav.people', icon: Users, end: true },
+    { to: '/admin/admissions', labelKey: 'nav.admissions', icon: UserPlus },
+    { to: '/admin/website', labelKey: 'nav.website', icon: Globe },
+    { to: '/admin/tuition', labelKey: 'nav.tuition', icon: CreditCard },
+    { to: '/admin/sheets', labelKey: 'nav.sheets', icon: ClipboardCheck },
+    { to: '/admin/announcements', labelKey: 'nav.notices', icon: FileText },
   ],
   IT_ADMIN: [
-    { to: '/admin', label: 'People', icon: Users, end: true },
-    { to: '/admin/classes', label: 'Classes', icon: GraduationCap },
-    { to: '/admin/admissions', label: 'Admissions', icon: UserPlus },
-    { to: '/admin/website', label: 'Website', icon: Globe },
-    { to: '/admin/tuition', label: 'Tuition', icon: CreditCard },
+    { to: '/admin', labelKey: 'nav.people', icon: Users, end: true },
+    { to: '/admin/classes', labelKey: 'nav.classes', icon: GraduationCap },
+    { to: '/admin/admissions', labelKey: 'nav.admissions', icon: UserPlus },
+    { to: '/admin/website', labelKey: 'nav.website', icon: Globe },
+    { to: '/admin/tuition', labelKey: 'nav.tuition', icon: CreditCard },
+    { to: '/admin/announcements', labelKey: 'nav.notices', icon: FileText },
   ],
   MANAGER: [
-    { to: '/admin', label: 'People', icon: Users, end: true },
-    { to: '/admin/admissions', label: 'Admissions', icon: UserPlus },
+    { to: '/admin', labelKey: 'nav.people', icon: Users, end: true },
+    { to: '/admin/admissions', labelKey: 'nav.admissions', icon: UserPlus },
+    { to: '/admin/tuition', labelKey: 'nav.tuition', icon: CreditCard },
+    { to: '/admin/announcements', labelKey: 'nav.notices', icon: FileText },
   ],
   TEACHER: [
-    { to: '/admin/teaching', label: 'Classes', icon: BookOpen, end: true },
-    { to: '/admin/teaching', label: 'Attendance', icon: CalendarCheck },
+    { to: '/admin/teaching', labelKey: 'nav.classes', icon: BookOpen, end: true },
+    { to: '/admin/teaching/attendance', labelKey: 'nav.attendance', icon: CalendarCheck },
   ],
   PARENT: [
-    { to: '/portal/dashboard', label: 'My children', icon: Baby, end: true },
-    { to: '/portal/pay', label: 'Pay tuition', icon: CreditCard },
+    { to: '/portal/dashboard', labelKey: 'nav.myChildren', icon: Baby, end: true },
+    { to: '/portal/pay', labelKey: 'nav.payTuition', icon: CreditCard },
   ],
   STUDENT: [
-    { to: '/portal/student', label: 'Report card', icon: FileText, end: true },
-    { to: '/portal/student', label: 'Attendance', icon: ClipboardCheck },
+    { to: '/portal/dashboard', labelKey: 'nav.reportCard', icon: FileText, end: true },
+    { to: '/portal/dashboard#attendance', labelKey: 'nav.attendance', icon: ClipboardCheck },
   ],
 };
 
-export const STAFF_NAV_GROUPS: Partial<Record<UserRole, { title: string; items: NavItem[] }[]>> = {
+export const STAFF_NAV_GROUPS: Partial<Record<UserRole, { titleKey: string; items: NavItem[] }[]>> = {
   DIRECTOR: [
-    { title: 'Dashboards', items: [NAV.DIRECTOR[0]] },
-    { title: 'Office', items: [NAV.DIRECTOR[1], NAV.DIRECTOR[2], NAV.DIRECTOR[3], NAV.DIRECTOR[4], NAV.DIRECTOR[5]] },
+    { titleKey: 'staffGroup.dashboards', items: [NAV.DIRECTOR[0]] },
+    {
+      titleKey: 'staffGroup.office',
+      items: [
+        NAV.DIRECTOR[1],
+        NAV.DIRECTOR[2],
+        NAV.DIRECTOR[3],
+        NAV.DIRECTOR[4],
+        NAV.DIRECTOR[5],
+        NAV.DIRECTOR[6],
+        NAV.DIRECTOR[7],
+      ],
+    },
   ],
-  IT_ADMIN: [{ title: 'Office', items: NAV.IT_ADMIN }],
-  MANAGER: [{ title: 'Office', items: NAV.MANAGER }],
-  TEACHER: [{ title: 'Teaching', items: NAV.TEACHER }],
+  IT_ADMIN: [{ titleKey: 'staffGroup.office', items: NAV.IT_ADMIN }],
+  MANAGER: [{ titleKey: 'staffGroup.office', items: NAV.MANAGER }],
+  TEACHER: [{ titleKey: 'staffGroup.teaching', items: NAV.TEACHER }],
 };

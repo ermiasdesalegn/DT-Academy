@@ -1,3 +1,5 @@
+import { DEFAULT_HOME_PAGE, DEFAULT_HOME_PAGE_AM, homeWithSharedAssets, type IHomePage } from './homePage';
+
 export type UserRole =
   | 'DIRECTOR'
   | 'IT_ADMIN'
@@ -207,6 +209,12 @@ export interface IPaymentListItem extends IPayment {
   studentIdNumber: string;
 }
 
+export interface INamedCount {
+  key: string;
+  label: string;
+  count: number;
+}
+
 export interface IInsights {
   students: {
     total: number;
@@ -217,6 +225,28 @@ export interface IInsights {
     total: number;
     teachers: number;
     officeAdmin: number;
+  };
+  family: {
+    parents: number;
+    parentsWithChildren: number;
+    studentLoginsEnabled: number;
+  };
+  byYear: INamedCount[];
+  byGrade: INamedCount[];
+  payments: {
+    pending: number;
+    verified: number;
+    rejected: number;
+    verifiedAmountEtb: number;
+    pendingAmountEtb: number;
+    byMethod: { method: string; count: number; amountEtb: number }[];
+    byMonth: { month: number; label: string; verified: number; pending: number; amountEtb: number }[];
+  };
+  grades: {
+    draft: number;
+    pendingApproval: number;
+    approved: number;
+    unlockRequested: number;
   };
 }
 
@@ -231,6 +261,7 @@ export interface IFamilyChild {
   tuitionMonths: ITuitionMonth[];
   teachers: IFamilyTeacher[];
   results: IFamilyResult[];
+  attendance: IFamilyAttendance[];
 }
 
 export interface IFamilyTeacher {
@@ -246,6 +277,79 @@ export interface IFamilyResult {
   totalScore: number;
 }
 
+export interface IFamilyAttendance {
+  courseName: string;
+  date: string;
+  status: AttendanceStatus;
+}
+
+export interface IPortalAnnouncement {
+  _id: string;
+  title: string;
+  content: string;
+  audience: AnnouncementAudience;
+  gradeLevel?: number;
+  createdAt: string;
+}
+
+export interface IGradeResultRow {
+  studentId: string;
+  studentName: string;
+  studentIdNumber: string;
+  testScore: number;
+  quizScore: number;
+  finalExamScore: number;
+  totalScore: number;
+  letterGrade: string;
+  behavioralRemark: string;
+}
+
+export interface IGradeSheetDetail {
+  _id: string;
+  courseId: string;
+  courseName: string;
+  courseCode: string;
+  gradeLevel: number;
+  section: string;
+  academicYear: string;
+  term: number;
+  status: GradeSheetStatus;
+  teacherName: string;
+  submittedAt?: string;
+  approvedAt?: string;
+  openInquiry?: { _id: string; reason: string; status: InquiryStatus };
+  rows: IGradeResultRow[];
+}
+
+export interface IGradeSheetQueueItem {
+  _id: string;
+  courseName: string;
+  courseCode: string;
+  gradeLevel: number;
+  section: string;
+  academicYear: string;
+  term: number;
+  status: GradeSheetStatus;
+  teacherName: string;
+  submittedAt?: string;
+  inquiryReason?: string;
+  inquiryId?: string;
+}
+
+export interface IAttendanceMark {
+  studentId: string;
+  studentName: string;
+  studentIdNumber: string;
+  status: AttendanceStatus | null;
+}
+
+export interface IAttendanceDay {
+  courseId: string;
+  courseName: string;
+  date: string;
+  marks: IAttendanceMark[];
+}
+
 export type TuitionMonthStatus = 'PAID' | 'PENDING' | 'UNPAID' | 'UPCOMING';
 
 export interface ITuitionMonth {
@@ -257,6 +361,19 @@ export interface ITuitionMonth {
   baseEtb: number;
   totalDueEtb: number;
   referencePNR?: string;
+}
+
+export interface ISiteLocaleCopy {
+  city: string;
+  country: string;
+  addressLine: string;
+  hours: string;
+  heroTagline: string;
+  heroTitle: string;
+  heroBlurb: string;
+  welcomeBody: string;
+  aboutBody: string;
+  footerBlurb: string;
 }
 
 export interface ISiteContent {
@@ -272,6 +389,59 @@ export interface ISiteContent {
   welcomeBody: string;
   aboutBody: string;
   footerBlurb: string;
+  home: IHomePage;
+  copyAm: ISiteLocaleCopy;
+  homeAm: IHomePage;
+}
+
+export const DEFAULT_SITE_COPY_AM: ISiteLocaleCopy = {
+  city: 'ደብረ ታቦር',
+  country: 'ኢትዮጵያ',
+  addressLine: 'ዋና በር፣ ደብረ ታቦር፣ ኢትዮጵያ',
+  hours: 'ሰኞ–አርብ 8:00–16:00',
+  heroTagline: 'ችሎታን ወደ ሕይወት',
+  heroTitle: 'ዲቲ አካዳሚ',
+  heroBlurb:
+    'ከኬጂ እስከ 8ኛ ክፍል · ደብረ ታቦር፣ ኢትዮጵያ · ወደ 2,000 ተማሪዎች። ምዝገባ በቢሮ ነው። የህዝብ ምዝገባ የለም።',
+  welcomeBody:
+    'ቡድናችን ለሚያስብ ክፍል፣ ሙያዊ ሠራተኞች እና ትምህርት ቤቱ እንዴት እንደሚሠራ ለሚያውቁ ወላጆች ቁርጠኛ ነው። ከኬጂ እስከ 8ኛ ክፍል በአንድ መዝገብ። ዳይሬክተሩ ውጤቶችን ይፈርማል። ልጁ ሲቀበል ቤተሰቦች መግቢያ ያገኛሉ።',
+  aboutBody:
+    'ዲቲ አካዳሚ በደብረ ታቦር፣ ኢትዮጵያ የተዘጋ ከኬጂ እስከ 8ኛ ክፍል ትምህርት ቤት ነው። ለተመዘገቡ ቤተሰቦች እንኖራለን፣ እንደ የህዝብ ገበያ አይደለም። የዳይሬክተር ቢሮ እያንዳንዱን ልጅ ይቀበላል፤ መምህራን ክፍሉን ይይዛሉ፤ ወላጆች በቅበላ ጊዜ የሚሰጥ የቤተሰብ መግቢያ በኩል የትምህርት ቤት ሕይወትን ያያሉ።',
+  footerBlurb:
+    'ከኬጂ እስከ 8ኛ ክፍል በደብረ ታቦር፣ ኢትዮጵያ። ወደ 2,000 ተማሪዎች። ቢሮው እያንዳንዱን ልጅ ይቀበላል። የህዝብ ምዝገባ የለም።',
+};
+
+const COPY_AM_KEYS: (keyof ISiteLocaleCopy)[] = [
+  'city',
+  'country',
+  'addressLine',
+  'hours',
+  'heroTagline',
+  'heroTitle',
+  'heroBlurb',
+  'welcomeBody',
+  'aboutBody',
+  'footerBlurb',
+];
+
+export function mergeSiteCopyAm(raw: unknown): ISiteLocaleCopy {
+  const src = raw && typeof raw === 'object' ? (raw as Record<string, unknown>) : {};
+  const next = { ...DEFAULT_SITE_COPY_AM };
+  for (const key of COPY_AM_KEYS) {
+    const value = src[key];
+    if (typeof value === 'string' && value.trim()) next[key] = value.trim();
+  }
+  return next;
+}
+
+export function siteForLocale(site: ISiteContent, locale: 'en' | 'am'): ISiteContent {
+  if (locale !== 'am') return site;
+  const copy = site.copyAm ?? DEFAULT_SITE_COPY_AM;
+  return {
+    ...site,
+    ...copy,
+    home: homeWithSharedAssets(site.homeAm ?? DEFAULT_HOME_PAGE_AM, site.home),
+  };
 }
 
 export const DEFAULT_SITE_CONTENT: ISiteContent = {
@@ -291,6 +461,9 @@ export const DEFAULT_SITE_CONTENT: ISiteContent = {
     'DT Academy is a closed Kindergarten to Grade 8 school in Debre Tabor, Ethiopia. We exist for enrolled families, not as a public marketplace. The Director’s office admits each child; teachers hold the classroom; parents see school life through a family login issued at admission.',
   footerBlurb:
     'Kindergarten to Grade 8 in Debre Tabor, Ethiopia. About 2,000 students. The office admits every child. There is no public sign-up.',
+  home: DEFAULT_HOME_PAGE,
+  copyAm: DEFAULT_SITE_COPY_AM,
+  homeAm: DEFAULT_HOME_PAGE_AM,
 };
 
 export interface ISetTuitionMonthRequest {
@@ -368,3 +541,14 @@ export {
   monthHasPassed,
   isCurrentMonth,
 } from './tuition';
+
+export type {
+  IHomeCard,
+  IHomePage,
+  IHomeProgram,
+  IHomeQuote,
+  IHomeStat,
+  IHomeWhy,
+} from './homePage';
+export { DEFAULT_HOME_PAGE, DEFAULT_HOME_PAGE_AM, homeWithSharedAssets, mergeHomePage, parseStatCount } from './homePage';
+export { letterFromTotal, scoredResult } from './grades';

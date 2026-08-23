@@ -3,9 +3,11 @@ import { useState, type FormEvent } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import type { PaymentMethod } from '@dt-academy/types';
 import { Button } from '@/components/ui/button';
+import { PageLoader } from '../components/layouts/PageLoader';
 import { useFamilyChildren } from '../hooks/useFamily';
 import { useCreateOutstandingPayment, useMockCompletePayment, usePaymentStatus } from '../hooks/usePayments';
-import { gradeLabel } from '../lib/labels';
+import { useT } from '../hooks/useT';
+import { gradeLabel, methodLabel } from '../lib/labels';
 
 const OFFICE: PaymentMethod[] = ['CASH', 'BANK_TRANSFER'];
 
@@ -19,9 +21,11 @@ export function PayTuitionPage() {
 }
 
 function PayForm() {
+  const t = useT();
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const { data: children = [], isLoading } = useFamilyChildren();
+  const { data, isLoading } = useFamilyChildren();
+  const children = data?.children ?? [];
   const create = useCreateOutstandingPayment();
   const [error, setError] = useState('');
   const [done, setDone] = useState<'office' | null>(null);
@@ -63,7 +67,7 @@ function PayForm() {
       if (axios.isAxiosError(err) && typeof err.response?.data?.message === 'string') {
         setError(err.response.data.message);
       } else {
-        setError('Could not start this payment.');
+        setError(t('pay.errStart'));
       }
     }
   }
@@ -71,7 +75,7 @@ function PayForm() {
   if (isLoading) {
     return (
       <div className="mx-auto max-w-lg px-4 py-16">
-        <p className="text-sm text-stone-500">Loading…</p>
+        <PageLoader label={t('portal.loadTuition')} variant="portal" />
       </div>
     );
   }
@@ -80,8 +84,8 @@ function PayForm() {
     return (
       <div className="mx-auto max-w-lg px-4 py-16">
         <div className="border border-stone-300 bg-white px-6 py-12 text-center">
-          <p className="font-serif text-2xl text-stone-900">No student to pay for</p>
-          <p className="mt-2 text-sm text-stone-500">Ask the office to admit your child first.</p>
+          <p className="font-serif text-2xl text-stone-900">{t('pay.noStudent')}</p>
+          <p className="mt-2 text-sm text-stone-500">{t('pay.noStudentHint')}</p>
         </div>
       </div>
     );
@@ -91,16 +95,16 @@ function PayForm() {
     return (
       <div className="mx-auto max-w-lg px-4 py-16">
         <div className="border border-stone-300 bg-white p-10 text-center">
-          <p className="font-serif text-2xl text-stone-900">Receipt submitted</p>
+          <p className="font-serif text-2xl text-stone-900">{t('pay.receiptSubmitted')}</p>
           <p className="mt-2 text-sm text-stone-500">
-            The office will match this receipt number. Tuition stays pending until they confirm it.
+            {t('pay.receiptHint')}
           </p>
           <Button
             className="mt-6 rounded-full bg-teal-800 hover:bg-teal-900"
             type="button"
             onClick={() => navigate('/portal/dashboard')}
           >
-            Back to dashboard
+            {t('pay.backDash')}
           </Button>
         </div>
       </div>
@@ -110,18 +114,17 @@ function PayForm() {
   return (
     <div className="mx-auto max-w-lg px-4 py-12 sm:px-6">
       <Link to="/portal/dashboard" className="text-sm font-medium text-teal-800 hover:underline">
-        Back to dashboard
+        {t('pay.backDash')}
       </Link>
-      <p className="mt-6 text-xs font-semibold uppercase tracking-[0.2em] text-teal-800">Tuition</p>
-      <h1 className="mt-2 font-serif text-4xl text-stone-900">Pay what is due</h1>
+      <p className="mt-6 text-xs font-semibold uppercase tracking-[0.2em] text-teal-800">{t('portal.tuition')}</p>
+      <h1 className="mt-2 font-serif text-4xl text-stone-900">{t('pay.title')}</h1>
       <p className="mt-3 text-sm text-stone-500">
-        Cash and bank stay with the office. Telebirr and M-Pesa go through the test payment page. This site never
-        marks a month paid on its own.
+        {t('pay.intro')}
       </p>
 
       <form className="mt-8 space-y-4 border border-stone-300 bg-white p-6" onSubmit={onSubmit}>
         <label className="block text-sm">
-          <span className="font-medium text-stone-700">Child</span>
+          <span className="font-medium text-stone-700">{t('pay.child')}</span>
           <select
             className="mt-1.5 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-700"
             value={selectedId}
@@ -137,36 +140,36 @@ function PayForm() {
         <div className="rounded-xl bg-stone-50 px-4 py-3 text-sm text-stone-700">
           {unpaid.length ? (
             <>
-              <p className="font-semibold">Total: {total.toLocaleString()} ETB</p>
+              <p className="font-semibold">{t('pay.total', { amount: total.toLocaleString() })}</p>
               <ul className="mt-2 space-y-1 text-xs text-stone-600">
                 {unpaid.map((row) => (
                   <li key={row.month}>
                     {row.label}: {row.baseEtb.toLocaleString()}
-                    {row.penaltyEtb > 0 ? ` + ${row.penaltyEtb.toLocaleString()} late` : ''} ETB
+                    {row.penaltyEtb > 0 ? ` ${t('portal.lateAdd', { amount: row.penaltyEtb.toLocaleString() })}` : ''} ETB
                   </li>
                 ))}
               </ul>
             </>
           ) : (
-            <p>Nothing is outstanding.</p>
+            <p>{t('pay.nothingDue')}</p>
           )}
         </div>
         <label className="block text-sm">
-          <span className="font-medium text-stone-700">Method</span>
+          <span className="font-medium text-stone-700">{t('pay.method')}</span>
           <select
             className="mt-1.5 w-full rounded-xl border border-stone-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-teal-700"
             value={form.method}
             onChange={(e) => setForm({ ...form, method: e.target.value as PaymentMethod })}
           >
-            <option value="CASH">Cash at office</option>
-            <option value="BANK_TRANSFER">Bank transfer</option>
-            <option value="TELEBIRR">Telebirr</option>
-            <option value="MPESA">M-Pesa</option>
+            <option value="CASH">{methodLabel('CASH')}</option>
+            <option value="BANK_TRANSFER">{methodLabel('BANK_TRANSFER')}</option>
+            <option value="TELEBIRR">{methodLabel('TELEBIRR')}</option>
+            <option value="MPESA">{methodLabel('MPESA')}</option>
           </select>
         </label>
         {office ? (
           <label className="block text-sm">
-            <span className="font-medium text-stone-700">Receipt number</span>
+            <span className="font-medium text-stone-700">{t('pay.receiptNo')}</span>
             <input
               required
               className="mt-1.5 w-full rounded-xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-teal-700"
@@ -177,7 +180,7 @@ function PayForm() {
         ) : null}
         {form.method === 'MPESA' ? (
           <label className="block text-sm">
-            <span className="font-medium text-stone-700">M-Pesa phone</span>
+            <span className="font-medium text-stone-700">{t('pay.mpesaPhone')}</span>
             <input
               required
               placeholder="2517…"
@@ -193,7 +196,7 @@ function PayForm() {
           type="submit"
           disabled={create.isPending || !unpaid.length}
         >
-          {create.isPending ? 'Starting…' : `Pay ${total.toLocaleString()} ETB`}
+          {create.isPending ? t('pay.starting') : t('pay.payEtb', { amount: total.toLocaleString() })}
         </Button>
       </form>
     </div>
@@ -201,6 +204,7 @@ function PayForm() {
 }
 
 function PayReturn({ paymentId, mock }: { paymentId: string; mock: boolean }) {
+  const t = useT();
   const complete = useMockCompletePayment();
   const [error, setError] = useState('');
   const { data, isLoading } = usePaymentStatus(paymentId, true);
@@ -215,7 +219,7 @@ function PayReturn({ paymentId, mock }: { paymentId: string; mock: boolean }) {
       if (axios.isAxiosError(err) && typeof err.response?.data?.message === 'string') {
         setError(err.response.data.message);
       } else {
-        setError('Could not complete the test payment.');
+        setError(t('pay.errTest'));
       }
     }
   }
@@ -223,28 +227,26 @@ function PayReturn({ paymentId, mock }: { paymentId: string; mock: boolean }) {
   return (
     <div className="mx-auto max-w-lg px-4 py-16">
       <Link to="/portal/dashboard" className="text-sm font-medium text-teal-800 hover:underline">
-        Back to dashboard
+        {t('pay.backDash')}
       </Link>
       <div className="mt-6 border border-stone-300 bg-white p-10 text-center">
         {isLoading ? (
-          <p className="text-sm text-stone-500">Checking payment…</p>
+          <p className="text-sm text-stone-500">{t('pay.checking')}</p>
         ) : status === 'VERIFIED' ? (
           <>
-            <p className="font-serif text-2xl text-stone-900">Paid</p>
-            <p className="mt-2 text-sm text-stone-500">The office does not need to stamp this receipt.</p>
+            <p className="font-serif text-2xl text-stone-900">{t('pay.paid')}</p>
+            <p className="mt-2 text-sm text-stone-500">{t('pay.paidHint')}</p>
           </>
         ) : status === 'REJECTED' ? (
           <>
-            <p className="font-serif text-2xl text-stone-900">Not completed</p>
-            <p className="mt-2 text-sm text-stone-500">The provider did not confirm this payment. Try again from Pay.</p>
+            <p className="font-serif text-2xl text-stone-900">{t('pay.notCompleted')}</p>
+            <p className="mt-2 text-sm text-stone-500">{t('pay.notCompletedHint')}</p>
           </>
         ) : (
           <>
-            <p className="font-serif text-2xl text-stone-900">Waiting for confirmation</p>
+            <p className="font-serif text-2xl text-stone-900">{t('pay.waiting')}</p>
             <p className="mt-2 text-sm text-stone-500">
-              {data?.payment.method === 'MPESA'
-                ? 'Approve the prompt on the phone. This page updates when the sandbox callback arrives.'
-                : 'Finish on the Telebirr page. This page updates when the sandbox notifies the school.'}
+              {data?.payment.method === 'MPESA' ? t('pay.waitingMpesa') : t('pay.waitingTelebirr')}
             </p>
             {isMock ? (
               <Button
@@ -253,7 +255,7 @@ function PayReturn({ paymentId, mock }: { paymentId: string; mock: boolean }) {
                 disabled={complete.isPending}
                 onClick={() => void onMockPay()}
               >
-                {complete.isPending ? 'Completing…' : 'Complete test payment'}
+                {complete.isPending ? t('pay.completing') : t('pay.completeTest')}
               </Button>
             ) : null}
           </>

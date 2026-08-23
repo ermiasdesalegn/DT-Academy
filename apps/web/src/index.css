@@ -59,6 +59,11 @@ body,
   min-height: 100%;
 }
 
+html[lang='am'] {
+  --font-sans: 'Noto Sans Ethiopic', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-serif: 'Noto Serif Ethiopic', 'Fraunces', ui-serif, Georgia, serif;
+}
+
 body {
   margin: 0;
   font-family: var(--font-sans);
@@ -182,8 +187,90 @@ body {
   will-change: transform;
 }
 
-.yearbook-tile {
-  will-change: transform;
+@keyframes letter-up {
+  from {
+    opacity: 0;
+    transform: rotateX(80deg) translateY(1.1em);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+.hero-letter {
+  transform-origin: 50% 100%;
+  animation: letter-up 0.85s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.hero-sheen {
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.22) 48%,
+    transparent 56%
+  );
+  background-size: 220% 100%;
+  animation: sheen-sweep 5.5s ease-in-out infinite;
+}
+
+@keyframes sheen-sweep {
+  0%,
+  28% {
+    background-position: 120% 0;
+  }
+  58%,
+  100% {
+    background-position: -20% 0;
+  }
+}
+
+.float-speck {
+  animation: speck-drift 7s ease-in-out infinite;
+}
+
+@keyframes speck-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0.25;
+  }
+  50% {
+    transform: translate3d(12px, -22px, 18px);
+    opacity: 0.7;
+  }
+}
+
+.quote-flip {
+  animation: quote-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes quote-in {
+  from {
+    opacity: 0;
+    transform: rotateX(-28deg) translateZ(-40px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.stage-swap {
+  animation: stage-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes stage-in {
+  from {
+    opacity: 0.2;
+    transform: rotateY(-18deg) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -216,8 +303,16 @@ body {
   .hero-window,
   .hinge-slate,
   .fan-card,
-  .yearbook-tile {
+  .yearbook-tile,
+  .hero-letter,
+  .hero-sheen,
+  .float-speck,
+  .quote-flip,
+  .stage-swap {
+    animation: none !important;
     transform: none !important;
     will-change: auto;
+    filter: none;
+    opacity: 1;
   }
 }

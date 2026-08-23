@@ -2,10 +2,13 @@ import axios from 'axios';
 import { GraduationCap } from 'lucide-react';
 import { useState, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { LanguageSwitch } from '../components/LanguageSwitch';
+import { useT } from '../hooks/useT';
 import { homePath } from '../lib/homePath';
 import { useAuthStore } from '../store/authStore';
 
 export function LoginPage() {
+  const t = useT();
   const login = useAuthStore((s) => s.login);
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
@@ -23,13 +26,13 @@ export function LoginPage() {
       if (user) navigate(homePath(user.role), { replace: true });
     } catch (err) {
       if (axios.isAxiosError(err) && !err.response) {
-        setError('Cannot reach the API. Keep npm run dev:api running, then try again.');
+        setError(t('login.errNetwork'));
       } else if (axios.isAxiosError(err) && err.response?.status === 500) {
-        setError('Database is waking up. Wait a few seconds and try again.');
+        setError(t('login.errDb'));
       } else if (axios.isAxiosError(err) && err.response?.status === 403) {
-        setError('This account is inactive.');
+        setError(t('login.errInactive'));
       } else {
-        setError('Invalid email or password.');
+        setError(t('login.errInvalid'));
       }
     } finally {
       setBusy(false);
@@ -39,32 +42,33 @@ export function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-stone-50 px-4">
       <div className="w-full max-w-md">
+        <div className="mb-4 flex justify-end">
+          <LanguageSwitch variant="light" />
+        </div>
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-teal-800 text-white">
           <GraduationCap size={22} />
         </div>
         <p className="mt-4 text-center text-sm font-semibold tracking-tight text-stone-900">DT Academy</p>
-        <h1 className="mt-1 text-center text-2xl font-semibold tracking-tight text-stone-900">Sign in</h1>
-        <p className="mt-2 text-center text-sm text-stone-500">
-          Accounts are created by the school office. Students in KG–G4 use the parent portal.
-        </p>
+        <h1 className="mt-1 text-center text-2xl font-semibold tracking-tight text-stone-900">{t('login.title')}</h1>
+        <p className="mt-2 text-center text-sm text-stone-500">{t('login.hint')}</p>
 
         <form
           onSubmit={onSubmit}
           className="mt-8 rounded-3xl border border-stone-200 bg-white p-6"
         >
-          <label className="block text-sm font-medium text-stone-700">Email or school ID</label>
+          <label className="block text-sm font-medium text-stone-700">{t('login.email')}</label>
           <input
             className="mt-1.5 w-full rounded-xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-teal-700"
-            placeholder="Parent email or school ID"
+            placeholder={t('login.emailPh')}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="username"
           />
-          <label className="mt-4 block text-sm font-medium text-stone-700">Password</label>
+          <label className="mt-4 block text-sm font-medium text-stone-700">{t('login.password')}</label>
           <input
             type="password"
             className="mt-1.5 w-full rounded-xl border border-stone-200 px-3 py-2.5 text-sm outline-none focus:border-teal-700"
-            placeholder="Password from the office"
+            placeholder={t('login.passwordPh')}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             autoComplete="current-password"
@@ -75,7 +79,7 @@ export function LoginPage() {
             disabled={busy}
             className="mt-6 w-full rounded-full bg-teal-800 px-3 py-2.5 text-sm font-medium text-white hover:bg-teal-900 disabled:opacity-60"
           >
-            {busy ? 'Signing in…' : 'Continue'}
+            {busy ? t('login.signingIn') : t('common.continue')}
           </button>
         </form>
       </div>

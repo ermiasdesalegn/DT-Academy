@@ -1,21 +1,25 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { BookOpen, ChevronRight, Users, Wallet } from 'lucide-react';
-import type { IFamilyChild, IFamilyTeacher, ITuitionMonth } from '@dt-academy/types';
+import { BookOpen, CalendarCheck, Users, Wallet } from 'lucide-react';
+import type { IFamilyAttendance, IFamilyChild, IFamilyTeacher, IPortalAnnouncement, ITuitionMonth } from '@dt-academy/types';
 import { DEFAULT_SITE_CONTENT } from '@dt-academy/types';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { PageLoader } from '../components/layouts/PageLoader';
 import { useFamilyChildren } from '../hooks/useFamily';
 import { useSiteContent } from '../hooks/useSiteContent';
-import { BLOG_POSTS } from '../lib/blogPosts';
-import { gradeLabel } from '../lib/labels';
+import { useLocale, useT } from '../hooks/useT';
+import { attendanceStatusLabel, gradeLabel } from '../lib/labels';
 import { PHOTOS } from '../lib/schoolPhotos';
 import { useAuthStore } from '../store/authStore';
 
-type Tab = 'class' | 'report' | 'payment' | 'notices';
+type Tab = 'class' | 'report' | 'attendance' | 'payment' | 'notices';
 
 export function ParentDashboard() {
+  const t = useT();
   const first = useAuthStore((s) => s.user?.name.split(' ')[0] ?? 'there');
-  const { data: children = [], isLoading, error } = useFamilyChildren();
+  const { data, isLoading, error } = useFamilyChildren();
+  const children = data?.children ?? [];
+  const announcements = data?.announcements ?? [];
   const { data: site = DEFAULT_SITE_CONTENT } = useSiteContent();
   const [childId, setChildId] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>('class');
@@ -29,15 +33,15 @@ export function ParentDashboard() {
         <img src={PHOTOS.children} alt="" className="h-64 w-full object-cover object-[center_25%] sm:h-80" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#1A2B3C] via-[#1A2B3C]/55 to-[#1A2B3C]/20" />
         <div className="absolute inset-0 flex flex-col justify-end px-6 py-8 sm:px-10">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70">Family portal</p>
-          <h1 className="mt-1 font-serif text-4xl font-medium tracking-tight text-white sm:text-5xl">Hello, {first}</h1>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-white/70">{t('portal.family')}</p>
+          <h1 className="mt-1 font-serif text-4xl font-medium tracking-tight text-white sm:text-5xl">{t('portal.hello', { name: first })}</h1>
           <p className="mt-2 max-w-lg text-sm text-white/75">
-            Class, report card, and tuition for this child.
+            {t('portal.familySub')}
           </p>
           {due > 0 ? (
             <div className="mt-5 flex flex-wrap items-center gap-3">
               <span className="rounded-full bg-white/15 px-4 py-1.5 text-sm text-white backdrop-blur">
-                {due.toLocaleString()} ETB on the account
+                {t('portal.dueEtb', { amount: due.toLocaleString() })}
               </span>
               <Link
                 to="#payment"
@@ -48,7 +52,7 @@ export function ParentDashboard() {
                 className="inline-flex items-center gap-1.5 rounded-full bg-red-600 px-4 py-1.5 text-sm font-semibold text-white hover:bg-red-700"
               >
                 <Wallet size={14} />
-                Pay
+                {t('common.pay')}
               </Link>
             </div>
           ) : null}
@@ -57,13 +61,13 @@ export function ParentDashboard() {
 
       <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
         {isLoading ? (
-          <p className="text-sm text-stone-500">Loading your children…</p>
+          <PageLoader label={t('portal.loadChildren')} variant="portal" />
         ) : error ? (
-          <p className="text-sm text-red-600">Could not load the family login. Keep the API running.</p>
+          <p className="text-sm text-red-600">{t('portal.familyError')}</p>
         ) : children.length === 0 ? (
           <div className="rounded-[1.5rem] border border-dashed border-stone-300 bg-white px-6 py-16 text-center">
-            <p className="font-serif text-2xl text-stone-900">No children on this login</p>
-            <p className="mt-2 text-sm text-stone-500">The office attaches a student at admission.</p>
+            <p className="font-serif text-2xl text-stone-900">{t('portal.noChildren')}</p>
+            <p className="mt-2 text-sm text-stone-500">{t('portal.noChildrenHint')}</p>
           </div>
         ) : (
           <>
@@ -87,7 +91,15 @@ export function ParentDashboard() {
               </div>
             ) : null}
 
-            {selected ? <ChildWorkspace child={selected} tab={tab} onTab={setTab} officePhone={site.phone} /> : null}
+            {selected ? (
+              <ChildWorkspace
+                child={selected}
+                tab={tab}
+                onTab={setTab}
+                officePhone={site.phone}
+                announcements={announcements}
+              />
+            ) : null}
           </>
         )}
       </div>
@@ -100,12 +112,15 @@ function ChildWorkspace({
   tab,
   onTab,
   officePhone,
+  announcements,
 }: {
   child: IFamilyChild;
   tab: Tab;
   onTab: (t: Tab) => void;
   officePhone: string;
+  announcements: IPortalAnnouncement[];
 }) {
+  const t = useT();
   const teachers = child.teachers ?? [];
 
   return (
@@ -118,25 +133,29 @@ function ChildWorkspace({
           <div>
             <p className="font-serif text-2xl text-stone-900">{child.name}</p>
             <p className="mt-0.5 text-sm text-stone-500">
-              {gradeLabel(child.profile.gradeLevel)} · Section {child.profile.section} · {child.profile.studentIdNumber}
+              {t('portal.sectionLine', {
+                grade: gradeLabel(child.profile.gradeLevel),
+                section: child.profile.section,
+                id: child.profile.studentIdNumber,
+              })}
             </p>
           </div>
         </div>
         <p className="text-sm text-stone-500">
-          Homeroom {gradeLabel(child.profile.gradeLevel)}
-          {child.profile.section}
+          {t('portal.homeroom', { grade: `${gradeLabel(child.profile.gradeLevel)}${child.profile.section}` })}
         </p>
       </div>
 
       <div className="mt-6 flex gap-1 overflow-x-auto rounded-full bg-white p-1 shadow-sm">
         {(
           [
-            ['class', 'Class'],
-            ['report', 'Report card'],
-            ['payment', 'Payments'],
-            ['notices', 'Notices'],
+            ['class', 'portal.tabClass'],
+            ['report', 'portal.tabReport'],
+            ['attendance', 'portal.tabAttendance'],
+            ['payment', 'portal.tabPayment'],
+            ['notices', 'portal.tabNotices'],
           ] as const
-        ).map(([id, label]) => (
+        ).map(([id, labelKey]) => (
           <button
             key={id}
             type="button"
@@ -145,7 +164,7 @@ function ChildWorkspace({
               tab === id ? 'bg-[#1A2B3C] text-white' : 'text-stone-600 hover:text-stone-900'
             }`}
           >
-            {label}
+            {t(labelKey)}
           </button>
         ))}
       </div>
@@ -158,31 +177,33 @@ function ChildWorkspace({
             teacherName: r.teacherName,
             letterGrade: r.letterGrade,
             totalScore: String(r.totalScore),
-            term: `Term ${r.term}`,
+            term: t('portal.termN', { n: r.term }),
           }))}
           hasOfficial={Boolean(child.results?.length)}
         />
       ) : null}
+      {tab === 'attendance' ? <AttendanceTab rows={child.attendance ?? []} /> : null}
       {tab === 'payment' ? <PaymentTab child={child} /> : null}
-      {tab === 'notices' ? <NoticesTab phone={officePhone} /> : null}
+      {tab === 'notices' ? <NoticesTab phone={officePhone} announcements={announcements} /> : null}
     </div>
   );
 }
 
 function ClassTab({ teachers, assigned }: { teachers: IFamilyTeacher[]; assigned: boolean }) {
+  const t = useT();
   return (
     <div className="mt-8">
       <div className="flex items-end justify-between gap-4">
         <div>
           <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800/80">
             <Users size={14} />
-            Class
+            {t('portal.classEyebrow')}
           </p>
-          <h2 className="mt-1 font-serif text-3xl text-stone-900">Teachers</h2>
+          <h2 className="mt-1 font-serif text-3xl text-stone-900">{t('portal.teachers')}</h2>
         </div>
         {!assigned ? (
           <p className="max-w-xs text-right text-xs text-stone-400">
-            Names fill in when the office assigns the class roll.
+            {t('portal.namesFill')}
           </p>
         ) : null}
       </div>
@@ -210,26 +231,25 @@ function ReportTab({
   rows: { subject: string; teacherName: string; letterGrade: string; totalScore: string; term: string }[];
   hasOfficial: boolean;
 }) {
+  const t = useT();
   return (
     <div className="mt-8">
       <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800/80">
         <BookOpen size={14} />
-        Academics
+        {t('portal.academics')}
       </p>
-      <h2 className="mt-1 font-serif text-3xl text-stone-900">Report card</h2>
+      <h2 className="mt-1 font-serif text-3xl text-stone-900">{t('portal.reportCard')}</h2>
       <p className="mt-2 text-sm text-stone-500">
-        {hasOfficial
-          ? 'Marks signed by the Director.'
-          : 'Waiting on the Director to approve the class sheet. Subjects below are the class plan.'}
+        {hasOfficial ? t('portal.marksSigned') : t('portal.waitingDirector')}
       </p>
       <div className="mt-6 overflow-hidden rounded-[1.5rem] bg-white shadow-sm">
         <table className="w-full text-left text-sm">
           <thead className="bg-[#1A2B3C] text-white">
             <tr>
-              <th className="px-5 py-3 font-medium">Subject</th>
-              <th className="hidden px-5 py-3 font-medium sm:table-cell">Teacher</th>
-              <th className="px-5 py-3 font-medium">Term</th>
-              <th className="px-5 py-3 text-right font-medium">Mark</th>
+              <th className="px-5 py-3 font-medium">{t('portal.colSubject')}</th>
+              <th className="hidden px-5 py-3 font-medium sm:table-cell">{t('portal.colTeacher')}</th>
+              <th className="px-5 py-3 font-medium">{t('portal.colTerm')}</th>
+              <th className="px-5 py-3 text-right font-medium">{t('portal.colMark')}</th>
             </tr>
           </thead>
           <tbody>
@@ -258,6 +278,7 @@ function ReportTab({
 }
 
 function PaymentTab({ child }: { child: IFamilyChild }) {
+  const t = useT();
   const rows = child.tuitionMonths ?? [];
   const unpaid = rows.filter((r) => r.status === 'UNPAID');
   const pending = rows.filter((r) => r.status === 'PENDING');
@@ -267,15 +288,15 @@ function PaymentTab({ child }: { child: IFamilyChild }) {
     <div className="mt-8">
       <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800/80">
         <Wallet size={14} />
-        Tuition
+        {t('portal.tuition')}
       </p>
-      <h2 className="mt-1 font-serif text-3xl text-stone-900">Payments</h2>
+      <h2 className="mt-1 font-serif text-3xl text-stone-900">{t('portal.payments')}</h2>
       <p className="mt-2 text-sm text-stone-500">
         {unpaid.length
-          ? `${total.toLocaleString()} ETB is due. Pay with cash at the office, bank, Telebirr, or M-Pesa.`
+          ? t('portal.dueHint', { amount: total.toLocaleString() })
           : pending.length
-            ? 'A receipt is with the office. Months stay pending until they confirm it.'
-            : 'Nothing is outstanding for this child.'}
+            ? t('portal.pendingHint')
+            : t('portal.nothingOutstanding')}
       </p>
 
       <ul className="mt-6 overflow-hidden rounded-[1.5rem] bg-white shadow-sm">
@@ -288,7 +309,7 @@ function PaymentTab({ child }: { child: IFamilyChild }) {
               <p className="text-sm font-medium text-stone-800">{row.label}</p>
               <p className="text-xs text-stone-400">
                 {row.baseEtb.toLocaleString()} ETB
-                {row.penaltyEtb > 0 ? ` + ${row.penaltyEtb.toLocaleString()} late` : ''}
+                {row.penaltyEtb > 0 ? ` ${t('portal.lateAdd', { amount: row.penaltyEtb.toLocaleString() })}` : ''}
               </p>
             </div>
             <span
@@ -303,12 +324,12 @@ function PaymentTab({ child }: { child: IFamilyChild }) {
               }`}
             >
               {row.status === 'PAID'
-                ? 'Paid'
+                ? t('portal.paid')
                 : row.status === 'UNPAID'
-                  ? 'Due'
+                  ? t('portal.due')
                   : row.status === 'PENDING'
-                    ? 'Pending'
-                    : 'Upcoming'}
+                    ? t('portal.pending')
+                    : t('portal.upcoming')}
             </span>
           </li>
         ))}
@@ -320,41 +341,66 @@ function PaymentTab({ child }: { child: IFamilyChild }) {
           className="mt-6 inline-flex items-center gap-2 rounded-full bg-teal-800 px-5 py-2.5 text-sm font-semibold text-white hover:bg-teal-900"
         >
           <Wallet size={16} />
-          Pay {total.toLocaleString()} ETB
+          {t('portal.payAmount', { amount: total.toLocaleString() })}
         </Link>
       ) : null}
     </div>
   );
 }
 
-function NoticesTab({ phone }: { phone: string }) {
+function AttendanceTab({ rows }: { rows: IFamilyAttendance[] }) {
+  const t = useT();
   return (
     <div className="mt-8">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800/80">School</p>
-      <h2 className="mt-1 font-serif text-3xl text-stone-900">Notices</h2>
-      <ul className="mt-6 grid gap-4 md:grid-cols-2">
-        {BLOG_POSTS.slice(0, 4).map((post) => (
-          <li key={post.slug}>
-            <Link
-              to={`/blog/${post.slug}`}
-              className="group flex h-full overflow-hidden rounded-[1.25rem] bg-white shadow-sm"
-            >
-              <img src={post.image} alt="" className="h-28 w-24 shrink-0 object-cover sm:h-auto sm:w-32" />
-              <div className="flex flex-1 flex-col justify-center p-4">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-400">{post.date}</p>
-                <p className="mt-1 font-medium text-stone-900 group-hover:underline">{post.title}</p>
-                <p className="mt-2 inline-flex items-center gap-1 text-xs font-semibold text-teal-800">
-                  Read
-                  <ChevronRight size={12} />
-                </p>
-              </div>
-            </Link>
-          </li>
-        ))}
-      </ul>
-      <p className="mt-6 text-sm text-stone-500">
-        Pickup and login questions: front office {phone}.
+      <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800/80">
+        <CalendarCheck size={14} />
+        {t('portal.roll')}
       </p>
+      <h2 className="mt-1 font-serif text-3xl text-stone-900">{t('portal.attendance')}</h2>
+      <p className="mt-2 text-sm text-stone-500">{t('portal.attendanceHint')}</p>
+      {rows.length === 0 ? (
+        <p className="mt-6 text-sm text-stone-500">{t('portal.noRoll')}</p>
+      ) : (
+        <ul className="mt-6 divide-y divide-stone-100 overflow-hidden rounded-[1.25rem] bg-white shadow-sm">
+          {rows.map((row) => (
+            <li key={`${row.courseName}-${row.date}`} className="flex items-center justify-between px-5 py-3 text-sm">
+              <div>
+                <p className="font-medium text-stone-800">{row.courseName}</p>
+                <p className="text-xs text-stone-400">{row.date}</p>
+              </div>
+              <span className="text-xs font-semibold uppercase tracking-wide text-teal-900">{attendanceStatusLabel(row.status)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function NoticesTab({ phone, announcements }: { phone: string; announcements: IPortalAnnouncement[] }) {
+  const t = useT();
+  const locale = useLocale();
+  const dateLocale = locale === 'am' ? 'am-ET' : 'en-GB';
+  return (
+    <div className="mt-8">
+      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800/80">{t('portal.school')}</p>
+      <h2 className="mt-1 font-serif text-3xl text-stone-900">{t('portal.notices')}</h2>
+      {announcements.length === 0 ? (
+        <p className="mt-6 text-sm text-stone-500">{t('portal.noNotices')}</p>
+      ) : (
+        <ul className="mt-6 grid gap-4 md:grid-cols-2">
+          {announcements.map((item) => (
+            <li key={item._id} className="rounded-[1.25rem] bg-white p-5 shadow-sm">
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-400">
+                {new Date(item.createdAt).toLocaleDateString(dateLocale)}
+              </p>
+              <p className="mt-1 font-medium text-stone-900">{item.title}</p>
+              <p className="mt-2 whitespace-pre-wrap text-sm text-stone-600">{item.content}</p>
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className="mt-6 text-sm text-stone-500">{t('portal.pickup', { phone })}</p>
     </div>
   );
 }

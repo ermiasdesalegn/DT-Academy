@@ -1,8 +1,10 @@
 import { ArrowLeft } from 'lucide-react';
 import { Link, Navigate, useParams } from 'react-router-dom';
+import { useT } from '../../hooks/useT';
 import { BLOG_POSTS, getPost } from '../../lib/blogPosts';
 
 export function BlogPostPage() {
+  const t = useT();
   const { slug } = useParams();
   const post = slug ? getPost(slug) : undefined;
 
@@ -20,9 +22,9 @@ export function BlogPostPage() {
           className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-stone-500 hover:text-[#1A2B3C]"
         >
           <ArrowLeft size={14} />
-          All notices
+          {t('blog.allNotices')}
         </Link>
-        <p className="mt-8 text-xs font-semibold uppercase tracking-[0.22em] text-red-600">{post.category}</p>
+        <p className="mt-8 text-xs font-semibold uppercase tracking-[0.22em] text-red-600">{t(`blog.${post.category}`)}</p>
         <h1 className="mt-3 text-4xl font-bold uppercase leading-tight sm:text-5xl">{post.title}</h1>
         <p className="mt-4 text-sm text-stone-500">
           {post.date} · {post.author} · Debre Tabor
@@ -39,11 +41,11 @@ export function BlogPostPage() {
         ))}
       </div>
       <section className="mx-auto max-w-6xl px-4 pb-20 sm:px-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">More from the office</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500">{t('blog.moreFromOffice')}</p>
         <div className="mt-6 grid gap-4 md:grid-cols-3">
           {more.map((item) => (
             <Link key={item.slug} to={`/blog/${item.slug}`} className="rounded-2xl bg-white p-5 ring-1 ring-stone-200/80">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-red-600">{item.category}</p>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-red-600">{t(`blog.${item.category}`)}</p>
               <h2 className="mt-2 font-bold uppercase text-[#1A2B3C]">{item.title}</h2>
               <p className="mt-2 text-sm text-stone-500">{item.date}</p>
             </Link>
