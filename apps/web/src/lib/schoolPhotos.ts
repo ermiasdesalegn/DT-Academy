@@ -8,5 +8,6 @@ export const PHOTOS = {
   student: '/images/play-together.png',
   parent: '/images/classroom-smiles.png',
   hands: '/images/classroom-hands.png',
+  hero: '/images/hero-classroom.jpg',
   arrival: '/images/arrival.png',
 };

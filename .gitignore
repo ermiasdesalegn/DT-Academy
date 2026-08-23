@@ -7,3 +7,5 @@ build
 .DS_Store
 coverage
 .vite
+apps/api/uploads/*
+!apps/api/uploads/.gitkeep
