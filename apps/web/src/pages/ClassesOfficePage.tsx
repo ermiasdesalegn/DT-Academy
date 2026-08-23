@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { IClassGroup } from '@dt-academy/types';
 import { Button } from '@/components/ui/button';
+import { PageLoader } from '../components/layouts/PageLoader';
 import { useClassOverall, useClasses, useSetHomeroom } from '../hooks/useClasses';
 import { useUsers } from '../hooks/useUsers';
 import { gradeLabel } from '../lib/labels';
@@ -27,13 +28,17 @@ export function ClassesOfficePage() {
         Each class has one representative teacher. That teacher sees every subject mark other teachers have imported.
       </p>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[18rem_1fr]">
-        <section className="rounded-2xl border border-gray-200 bg-white">
-          {classes.isLoading ? (
-            <p className="px-5 py-8 text-sm text-slate-500">Loading classes…</p>
-          ) : list.length === 0 ? (
-            <p className="px-5 py-8 text-sm text-slate-500">Admit students first. Classes appear from their grade and section.</p>
-          ) : (
+      {classes.isLoading ? (
+        <div className="mt-6">
+          <PageLoader label="Loading classes" />
+        </div>
+      ) : classes.isError ? (
+        <p className="mt-6 text-sm text-red-600">Could not load classes. Keep the API running.</p>
+      ) : list.length === 0 ? (
+        <p className="mt-6 text-sm text-slate-500">Admit students first. Classes appear from their grade and section.</p>
+      ) : (
+        <div className="mt-6 grid gap-6 lg:grid-cols-[18rem_1fr]">
+          <section className="rounded-2xl border border-gray-200 bg-white">
             <ul className="divide-y divide-gray-100">
               {list.map((row) => {
                 const active =
@@ -58,59 +63,59 @@ export function ClassesOfficePage() {
                 );
               })}
             </ul>
-          )}
-        </section>
-
-        {current ? (
-          <section className="space-y-4">
-            <div className="rounded-2xl border border-gray-200 bg-white p-5">
-              <p className="text-sm font-semibold text-slate-900">
-                Representative · {gradeLabel(current.gradeLevel)} {current.section}
-              </p>
-              <div className="mt-3 flex flex-wrap items-end gap-3">
-                <label className="text-sm">
-                  <span className="text-slate-600">Teacher</span>
-                  <select
-                    className="mt-1 block rounded-lg border border-slate-200 px-3 py-2 text-sm"
-                    defaultValue={current.homeroomTeacherId ?? ''}
-                    key={current.homeroomTeacherId ?? 'none'}
-                    id="homeroom-teacher"
-                  >
-                    <option value="">Select…</option>
-                    {teacherList.map((t) => (
-                      <option key={t._id} value={t._id}>
-                        {t.name}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <Button
-                  type="button"
-                  disabled={setHome.isPending}
-                  onClick={() => {
-                    const el = document.getElementById('homeroom-teacher') as HTMLSelectElement | null;
-                    if (!el?.value) return;
-                    void setHome.mutateAsync({
-                      gradeLevel: current.gradeLevel,
-                      section: current.section,
-                      academicYear: current.academicYear,
-                      teacherId: el.value,
-                    });
-                  }}
-                >
-                  Save
-                </Button>
-              </div>
-            </div>
-
-            <OverallTable
-              loading={overall.isLoading}
-              overall={overall.data}
-              empty="Subject teachers import marks. Rank appears here once a sheet is submitted."
-            />
           </section>
-        ) : null}
-      </div>
+
+          {current ? (
+            <section className="space-y-4">
+              <div className="rounded-2xl border border-gray-200 bg-white p-5">
+                <p className="text-sm font-semibold text-slate-900">
+                  Representative · {gradeLabel(current.gradeLevel)} {current.section}
+                </p>
+                <div className="mt-3 flex flex-wrap items-end gap-3">
+                  <label className="text-sm">
+                    <span className="text-slate-600">Teacher</span>
+                    <select
+                      className="mt-1 block rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                      defaultValue={current.homeroomTeacherId ?? ''}
+                      key={current.homeroomTeacherId ?? 'none'}
+                      id="homeroom-teacher"
+                    >
+                      <option value="">Select…</option>
+                      {teacherList.map((t) => (
+                        <option key={t._id} value={t._id}>
+                          {t.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <Button
+                    type="button"
+                    disabled={setHome.isPending}
+                    onClick={() => {
+                      const el = document.getElementById('homeroom-teacher') as HTMLSelectElement | null;
+                      if (!el?.value) return;
+                      void setHome.mutateAsync({
+                        gradeLevel: current.gradeLevel,
+                        section: current.section,
+                        academicYear: current.academicYear,
+                        teacherId: el.value,
+                      });
+                    }}
+                  >
+                    Save
+                  </Button>
+                </div>
+              </div>
+
+              <OverallTable
+                loading={overall.isLoading}
+                overall={overall.data}
+                empty="Subject teachers import marks. Rank appears here once a sheet is submitted."
+              />
+            </section>
+          ) : null}
+        </div>
+      )}
     </div>
   );
 }
@@ -126,7 +131,9 @@ export function OverallTable({
 }) {
   if (loading) {
     return (
-      <div className="rounded-2xl border border-gray-200 bg-white px-5 py-10 text-sm text-slate-500">Loading results…</div>
+      <div className="mt-0">
+        <PageLoader label="Loading class results" compact />
+      </div>
     );
   }
   if (!overall?.rows.length) {
