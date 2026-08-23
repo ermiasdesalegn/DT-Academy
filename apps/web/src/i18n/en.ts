@@ -104,6 +104,8 @@ export const en = {
     emailPh: 'Parent email or school ID',
     password: 'Password',
     passwordPh: 'Password from the office',
+    showPassword: 'Show password',
+    hidePassword: 'Hide password',
     signingIn: 'Signing in…',
     errNetwork: 'Cannot reach the API. Keep npm run dev:api running, then try again.',
     errDb: 'Database is waking up. Wait a few seconds and try again.',

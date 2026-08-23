@@ -106,6 +106,8 @@ export const am: Messages = {
     emailPh: 'የወላጅ ኢሜይል ወይም የትምህርት ቤት መለያ',
     password: 'የይለፍ ቃል',
     passwordPh: 'ከቢሮ የተሰጠ የይለፍ ቃል',
+    showPassword: 'የይለፍ ቃል አሳይ',
+    hidePassword: 'የይለፍ ቃል ደብቅ',
     signingIn: 'በመግባት ላይ…',
     errNetwork: 'ኤፒአይ አልተገኘም። npm run dev:api እንዲሄድ ያድርጉ፣ ከዚያ እንደገና ይሞክሩ።',
     errDb: 'ዳታቤዝ እየነቃ ነው። ጥቂት ሰከንዶች ጠብቀው እንደገና ይሞክሩ።',
