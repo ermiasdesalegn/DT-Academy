@@ -25,12 +25,28 @@ export async function ensureSiteContentTable(): Promise<void> {
       CONSTRAINT "SiteContent_pkey" PRIMARY KEY ("id")
     )
   `);
+  await prisma.$executeRawUnsafe(`
+    ALTER TABLE "SiteContent" ADD COLUMN IF NOT EXISTS "homeJson" TEXT NOT NULL DEFAULT '{}'
+  `);
+  await prisma.$executeRawUnsafe(`
+    ALTER TABLE "SiteContent" ADD COLUMN IF NOT EXISTS "copyAmJson" TEXT NOT NULL DEFAULT '{}'
+  `);
+  await prisma.$executeRawUnsafe(`
+    ALTER TABLE "SiteContent" ADD COLUMN IF NOT EXISTS "homeJsonAm" TEXT NOT NULL DEFAULT '{}'
+  `);
 
   const existing = await prisma.siteContent.findUnique({ where: { id: 'default' } });
   if (!existing) {
+    const { home, copyAm, homeAm, ...rest } = DEFAULT_SITE_CONTENT;
     await prisma.siteContent.create({
-      data: { id: 'default', ...DEFAULT_SITE_CONTENT },
+      data: { id: 'default', ...rest },
     });
+    await prisma.$executeRawUnsafe(
+      `UPDATE "SiteContent" SET "homeJson" = $1, "copyAmJson" = $2, "homeJsonAm" = $3 WHERE "id" = 'default'`,
+      JSON.stringify(home),
+      JSON.stringify(copyAm),
+      JSON.stringify(homeAm)
+    );
     return;
   }
 

@@ -257,5 +257,8 @@ model SiteContent {
   welcomeBody String   @db.Text
   aboutBody   String   @db.Text
   footerBlurb String   @db.Text
-  updatedAt   DateTime @updatedAt
+  homeJson     String   @default("{}") @db.Text
+  copyAmJson   String   @default("{}") @db.Text
+  homeJsonAm   String   @default("{}") @db.Text
+  updatedAt    DateTime @updatedAt
 }
