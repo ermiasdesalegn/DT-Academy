@@ -1,3 +1,5 @@
+import path from 'node:path';
+import fs from 'node:fs';
 import express from 'express';
 import cors from 'cors';
 import { env } from './config/env';
@@ -10,8 +12,12 @@ import { insightsRouter } from './routes/insights';
 import { familyRouter } from './routes/family';
 import { siteContentRouter } from './routes/siteContent';
 import { classesRouter } from './routes/classes';
+import { gradesRouter } from './routes/grades';
+import { attendanceRouter } from './routes/attendance';
+import { announcementsRouter } from './routes/announcements';
 import { seedDirector } from './seed/seedDirector';
 import { ensurePaymentMonthColumn, ensureSiteContentTable } from './lib/ensureSiteContent';
+import { ensureUploadDir, UPLOAD_DIR } from './lib/uploads';
 
 const app = express();
 
@@ -30,7 +36,23 @@ app.use('/api/payments', paymentsRouter);
 app.use('/api/insights', insightsRouter);
 app.use('/api/family', familyRouter);
 app.use('/api/classes', classesRouter);
+app.use('/api/grades', gradesRouter);
+app.use('/api/attendance', attendanceRouter);
+app.use('/api/announcements', announcementsRouter);
 app.use('/api/site-content', siteContentRouter);
+app.use('/api/uploads', express.static(UPLOAD_DIR));
+
+const webDist = path.resolve(__dirname, '../../web/dist');
+if (fs.existsSync(webDist)) {
+  app.use(express.static(webDist));
+  app.get('*', (req, res, next) => {
+    if (req.path.startsWith('/api') || req.path === '/health') {
+      next();
+      return;
+    }
+    res.sendFile(path.join(webDist, 'index.html'));
+  });
+}
 
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error(err);
@@ -38,6 +60,7 @@ app.use((err: unknown, _req: express.Request, res: express.Response, _next: expr
 });
 
 async function start(): Promise<void> {
+  ensureUploadDir();
   app.listen(env.port, () => {
     console.log(`API listening on http://localhost:${env.port}`);
   });

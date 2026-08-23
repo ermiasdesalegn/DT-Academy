@@ -12,7 +12,9 @@
     "dev:web": "npm run dev -w @dt-academy/web",
     "dev": "npm run dev:api & npm run dev:web",
     "seed:demo": "npm run seed:demo -w @dt-academy/api",
-    "seed:demo:reset": "npm run seed:demo:reset -w @dt-academy/api"
+    "seed:demo:reset": "npm run seed:demo:reset -w @dt-academy/api",
+    "build:web": "npm run build -w @dt-academy/web",
+    "start": "npm run start -w @dt-academy/api"
   },
   "engines": {
     "node": ">=20"

@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: dt-academy
+    runtime: node
+    plan: free
+    buildCommand: npm install --include=dev && npx prisma generate --schema=apps/api/prisma/schema.prisma && npm run build -w @dt-academy/web
+    startCommand: npm run start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_VERSION
+        value: '20'
+      - key: PAYMENTS_MODE
+        value: mock
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: PUBLIC_WEB_URL
+        sync: false
+      - key: SEED_ADMIN_EMAIL
+        sync: false
+      - key: SEED_ADMIN_PASSWORD
+        sync: false
+      - key: SEED_ADMIN_NAME
+        sync: false
