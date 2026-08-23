@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCreatePayment } from '../hooks/usePayments';
+import { PageLoader } from '../components/layouts/PageLoader';
 import { useUsers } from '../hooks/useUsers';
 import { gradeLabel } from '../lib/labels';
 import { api } from '../services/api';
@@ -59,7 +60,7 @@ export function AdminDashboard() {
 
       <section className="mt-4 rounded-2xl border border-gray-200 bg-white">
         {isLoading ? (
-          <p className="px-6 py-10 text-sm text-slate-500">Loading people…</p>
+          <PageLoader label="Loading people" />
         ) : error ? (
           <p className="px-6 py-10 text-sm text-red-600">Could not load people. Check that the API is running.</p>
         ) : users.length === 0 ? (

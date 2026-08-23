@@ -1,23 +1,67 @@
 import { useState } from 'react';
 import { MONTH_NAMES, type ITuitionMonth } from '@dt-academy/types';
 import { Button } from '@/components/ui/button';
+import { TuitionCharts } from '../components/office/InsightsCharts';
+import { PageLoader } from '../components/layouts/PageLoader';
+import { StatCard } from '../components/office/StatCard';
+import { useInsights } from '../hooks/useInsights';
 import { useUsers } from '../hooks/useUsers';
 import { useSetTuitionMonth, useStudentTuition } from '../hooks/usePayments';
+import { useAuthStore } from '../store/authStore';
 
 export function TuitionOfficePage() {
   const { data: users = [], isLoading } = useUsers('students');
+  const insights = useInsights();
   const [studentId, setStudentId] = useState('');
   const [note, setNote] = useState('Paid in cash before the portal');
   const tuition = useStudentTuition(studentId || undefined);
   const setMonth = useSetTuitionMonth();
+  const role = useAuthStore((s) => s.user?.role);
+  const canLedger = role === 'DIRECTOR' || role === 'IT_ADMIN';
   const profileId = users.find((u) => u.studentProfile?._id === studentId)?.studentProfile?._id ?? studentId;
+  const d = insights.data;
+  const pay = d?.payments;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Tuition months</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Tuition</h1>
         <p className="mt-1 text-sm text-slate-500">
-          Mark months paid or unpaid when a family paid cash before this system. Every change is logged with your name.
+          School-wide receipts, then mark a single student when cash was paid before the portal.
+        </p>
+      </div>
+
+      {insights.isLoading && !d ? (
+        <PageLoader label="Loading tuition" />
+      ) : (
+        <>
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard
+          label="Verified"
+          value={pay ? pay.verified.toLocaleString() : '—'}
+          hint={pay ? `ETB ${pay.verifiedAmountEtb.toLocaleString()}` : undefined}
+        />
+        <StatCard
+          label="Pending"
+          value={pay ? pay.pending.toLocaleString() : '—'}
+          hint={pay ? `ETB ${pay.pendingAmountEtb.toLocaleString()} waiting` : undefined}
+        />
+        <StatCard label="Rejected" value={pay ? pay.rejected.toLocaleString() : '—'} />
+        <StatCard
+          label="Students locked"
+          value={d ? d.students.lockedOverdue.toLocaleString() : '—'}
+          hint="isActive is off on the profile"
+        />
+      </div>
+
+      {d ? <TuitionCharts data={d} /> : <p className="text-sm text-slate-500">Loading charts…</p>}
+
+      {canLedger ? (
+        <>
+      <div>
+        <h2 className="text-lg font-semibold text-slate-900">One student</h2>
+        <p className="mt-1 text-sm text-slate-500">
+          Mark months paid or unpaid for cash before this system. Every change is logged with your name.
         </p>
       </div>
 
@@ -128,6 +172,15 @@ export function TuitionOfficePage() {
         <p className="text-sm text-slate-500">Loading months…</p>
       ) : null}
       {setMonth.isError ? <p className="text-sm text-red-600">Could not save. Restart the API after Prisma generate.</p> : null}
+        </>
+      ) : (
+        <p className="text-sm text-slate-500">
+          Verify pending receipts on this page’s charts and on People. Month-by-month ledger changes stay with the
+          Director and IT Admin.
+        </p>
+      )}
+        </>
+      )}
     </div>
   );
 }
