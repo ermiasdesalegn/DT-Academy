@@ -260,5 +260,7 @@ model SiteContent {
   homeJson     String   @default("{}") @db.Text
   copyAmJson   String   @default("{}") @db.Text
   homeJsonAm   String   @default("{}") @db.Text
+  blogJson     String   @default("{}") @db.Text
+  blogJsonAm   String   @default("{}") @db.Text
   updatedAt    DateTime @updatedAt
 }

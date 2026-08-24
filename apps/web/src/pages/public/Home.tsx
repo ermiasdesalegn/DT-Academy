@@ -24,6 +24,7 @@ import { Tilt3D } from '../../components/motion/Tilt3D';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 import { useScrollProgress } from '../../hooks/useScrollProgress';
 import { useLocalizedSite } from '../../hooks/useLocalizedSite';
+import { useFormat } from '../../hooks/useFormat';
 import { useT } from '../../hooks/useT';
 
 const STAT_ICONS = [Users, GraduationCap, School, MapPin];
@@ -37,6 +38,7 @@ function StatTitle({ value }: { value: string }) {
 
 export function HomePage() {
   const t = useT();
+  const { hours } = useFormat();
   const [program, setProgram] = useState(0);
   const [quote, setQuote] = useState(0);
   const { data: site = DEFAULT_SITE_CONTENT } = useLocalizedSite();
@@ -112,7 +114,7 @@ export function HomePage() {
             <p className="mt-3 max-w-md text-[15px] leading-relaxed text-stone-500">{site.heroBlurb}</p>
             <div className="mt-9 flex flex-wrap gap-3">
               <Link
-                to="/admissions"
+                to="/contact"
                 className="inline-flex items-center gap-2 rounded-full bg-red-600 px-7 py-3 text-sm font-semibold text-white shadow-lg shadow-red-600/25 hover:bg-red-700"
               >
                 {h.enquireLabel}
@@ -257,7 +259,7 @@ export function HomePage() {
             <div>
               <p className="text-sm font-semibold text-white">{h.contactPrompt}</p>
               <p className="text-sm text-white/70">
-                {site.phone} · {site.hours}
+                {site.phone} · {hours(site.hours)}
               </p>
             </div>
           </div>

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { DEFAULT_HOME_PAGE_AM, DEFAULT_SITE_CONTENT, mergeHomePage, mergeSiteCopyAm, type ISiteContent } from '@dt-academy/types';
+import { DEFAULT_BLOG_POSTS, DEFAULT_BLOG_POSTS_AM, DEFAULT_HOME_PAGE_AM, DEFAULT_SITE_CONTENT, mergeBlogPosts, mergeHomePage, mergeSiteCopyAm, type ISiteContent } from '@dt-academy/types';
 import { api } from '../services/api';
 
 function normalize(data: ISiteContent): ISiteContent {
@@ -8,6 +8,8 @@ function normalize(data: ISiteContent): ISiteContent {
     home: mergeHomePage(data.home),
     copyAm: mergeSiteCopyAm(data.copyAm),
     homeAm: mergeHomePage(data.homeAm, DEFAULT_HOME_PAGE_AM),
+    blog: mergeBlogPosts(data.blog, DEFAULT_BLOG_POSTS),
+    blogAm: mergeBlogPosts(data.blogAm, DEFAULT_BLOG_POSTS_AM),
   };
 }
 

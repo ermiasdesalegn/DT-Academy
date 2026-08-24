@@ -4,10 +4,12 @@ import { EnrollmentCharts } from '../components/office/InsightsCharts';
 import { PageLoader } from '../components/layouts/PageLoader';
 import { StatCard } from '../components/office/StatCard';
 import { useInsights } from '../hooks/useInsights';
+import { useFormat } from '../hooks/useFormat';
 import { usePayments, useVerifyPayment } from '../hooks/usePayments';
 import { methodLabel } from '../lib/labels';
 
 export function StaffDashboard() {
+  const { n } = useFormat();
   const payments = usePayments('PENDING');
   const insights = useInsights();
   const verify = useVerifyPayment();
@@ -35,28 +37,28 @@ export function StaffDashboard() {
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <StatCard
               label="Students on roll"
-              value={students ? students.total.toLocaleString() : '—'}
+              value={students ? n(students.total) : '—'}
               hint={
                 students
-                  ? `${students.activePaid.toLocaleString()} active · ${students.lockedOverdue.toLocaleString()} locked`
+                  ? `${n(students.activePaid)} active · ${n(students.lockedOverdue)} locked`
                   : undefined
               }
             />
             <StatCard
               label="Parents on the platform"
-              value={family ? family.parents.toLocaleString() : '—'}
+              value={family ? n(family.parents) : '—'}
               hint={
-                family ? `${family.parentsWithChildren.toLocaleString()} with a child attached` : undefined
+                family ? `${n(family.parentsWithChildren)} with a child attached` : undefined
               }
             />
             <StatCard
               label="Student logins"
-              value={family ? family.studentLoginsEnabled.toLocaleString() : '—'}
+              value={family ? n(family.studentLoginsEnabled) : '—'}
               hint="Grade 5+ accounts the office enabled"
             />
             <StatCard
               label="Staff"
-              value={staff ? staff.total.toLocaleString() : '—'}
+              value={staff ? n(staff.total) : '—'}
               hint={staff ? `${staff.teachers} teachers · ${staff.officeAdmin} office` : undefined}
             />
           </div>
@@ -107,7 +109,7 @@ export function StaffDashboard() {
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium text-slate-900">{row.parentName}</p>
                     <p className="text-xs text-slate-500">
-                      ETB {row.amount.toLocaleString()} · {methodLabel(row.method)}
+                      ETB {n(row.amount)} · {methodLabel(row.method)}
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">

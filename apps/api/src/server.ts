@@ -15,6 +15,7 @@ import { classesRouter } from './routes/classes';
 import { gradesRouter } from './routes/grades';
 import { attendanceRouter } from './routes/attendance';
 import { announcementsRouter } from './routes/announcements';
+import { contactRouter } from './routes/contact';
 import { seedDirector } from './seed/seedDirector';
 import { ensurePaymentMonthColumn, ensureSiteContentTable } from './lib/ensureSiteContent';
 import { ensureUploadDir, UPLOAD_DIR } from './lib/uploads';
@@ -40,6 +41,7 @@ app.use('/api/grades', gradesRouter);
 app.use('/api/attendance', attendanceRouter);
 app.use('/api/announcements', announcementsRouter);
 app.use('/api/site-content', siteContentRouter);
+app.use('/api/contact', contactRouter);
 app.use('/api/uploads', express.static(UPLOAD_DIR));
 
 const webDist = path.resolve(__dirname, '../../web/dist');

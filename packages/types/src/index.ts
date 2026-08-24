@@ -1,3 +1,9 @@
+import {
+  blogForLocale,
+  DEFAULT_BLOG_POSTS,
+  DEFAULT_BLOG_POSTS_AM,
+  type IBlogPost,
+} from './blog';
 import { DEFAULT_HOME_PAGE, DEFAULT_HOME_PAGE_AM, homeWithSharedAssets, type IHomePage } from './homePage';
 
 export type UserRole =
@@ -392,6 +398,8 @@ export interface ISiteContent {
   home: IHomePage;
   copyAm: ISiteLocaleCopy;
   homeAm: IHomePage;
+  blog: IBlogPost[];
+  blogAm: IBlogPost[];
 }
 
 export const DEFAULT_SITE_COPY_AM: ISiteLocaleCopy = {
@@ -435,12 +443,18 @@ export function mergeSiteCopyAm(raw: unknown): ISiteLocaleCopy {
 }
 
 export function siteForLocale(site: ISiteContent, locale: 'en' | 'am'): ISiteContent {
-  if (locale !== 'am') return site;
-  const copy = site.copyAm ?? DEFAULT_SITE_COPY_AM;
-  return {
+  const base: ISiteContent = {
     ...site,
+    blog: site.blog?.length ? site.blog : DEFAULT_BLOG_POSTS,
+    blogAm: site.blogAm ?? DEFAULT_BLOG_POSTS_AM,
+  };
+  if (locale !== 'am') return base;
+  const copy = base.copyAm ?? DEFAULT_SITE_COPY_AM;
+  return {
+    ...base,
     ...copy,
-    home: homeWithSharedAssets(site.homeAm ?? DEFAULT_HOME_PAGE_AM, site.home),
+    home: homeWithSharedAssets(base.homeAm ?? DEFAULT_HOME_PAGE_AM, base.home),
+    blog: blogForLocale(base.blog, base.blogAm),
   };
 }
 
@@ -464,6 +478,8 @@ export const DEFAULT_SITE_CONTENT: ISiteContent = {
   home: DEFAULT_HOME_PAGE,
   copyAm: DEFAULT_SITE_COPY_AM,
   homeAm: DEFAULT_HOME_PAGE_AM,
+  blog: DEFAULT_BLOG_POSTS,
+  blogAm: DEFAULT_BLOG_POSTS_AM,
 };
 
 export interface ISetTuitionMonthRequest {
@@ -551,4 +567,14 @@ export type {
   IHomeWhy,
 } from './homePage';
 export { DEFAULT_HOME_PAGE, DEFAULT_HOME_PAGE_AM, homeWithSharedAssets, mergeHomePage, parseStatCount } from './homePage';
+export {
+  BLOG_CATEGORIES,
+  BLOG_CATEGORY_VALUES,
+  blogForLocale,
+  DEFAULT_BLOG_POSTS,
+  DEFAULT_BLOG_POSTS_AM,
+  emptyBlogPost,
+  mergeBlogPosts,
+} from './blog';
+export type { BlogCategory, IBlogPost } from './blog';
 export { letterFromTotal, scoredResult } from './grades';

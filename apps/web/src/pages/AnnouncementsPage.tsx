@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PageLoader } from '../components/layouts/PageLoader';
 import { useAnnouncements, useCreateAnnouncement } from '../hooks/useAnnouncements';
+import { useFormat } from '../hooks/useFormat';
 import { gradeLabel } from '../lib/labels';
 
 const AUDIENCES: { id: AnnouncementAudience; label: string }[] = [
@@ -14,6 +15,7 @@ const AUDIENCES: { id: AnnouncementAudience; label: string }[] = [
 ];
 
 export function AnnouncementsPage() {
+  const { dateTime } = useFormat();
   const list = useAnnouncements();
   const create = useCreateAnnouncement();
   const [title, setTitle] = useState('');
@@ -108,7 +110,7 @@ export function AnnouncementsPage() {
             </p>
             <p className="mt-1 font-semibold text-slate-900">{item.title}</p>
             <p className="mt-2 whitespace-pre-wrap text-sm text-slate-600">{item.content}</p>
-            <p className="mt-2 text-xs text-slate-400">{new Date(item.createdAt).toLocaleString()}</p>
+            <p className="mt-2 text-xs text-slate-400">{dateTime(item.createdAt)}</p>
           </li>
         ))}
       </ul>

@@ -1,18 +1,23 @@
+import { DEFAULT_SITE_CONTENT } from '@dt-academy/types';
 import { ArrowLeft } from 'lucide-react';
 import { Link, Navigate, useParams } from 'react-router-dom';
+import { useLocalizedSite } from '../../hooks/useLocalizedSite';
+import { useFormat } from '../../hooks/useFormat';
 import { useT } from '../../hooks/useT';
-import { BLOG_POSTS, getPost } from '../../lib/blogPosts';
 
 export function BlogPostPage() {
   const t = useT();
+  const { date } = useFormat();
   const { slug } = useParams();
-  const post = slug ? getPost(slug) : undefined;
+  const { data: site = DEFAULT_SITE_CONTENT } = useLocalizedSite();
+  const posts = site.blog ?? [];
+  const post = slug ? posts.find((p) => p.slug === slug) : undefined;
 
   if (!post) {
     return <Navigate to="/blog" replace />;
   }
 
-  const more = BLOG_POSTS.filter((p) => p.slug !== post.slug).slice(0, 3);
+  const more = posts.filter((p) => p.slug !== post.slug).slice(0, 3);
 
   return (
     <div className="bg-[#f7f4ee] text-stone-900">
@@ -27,7 +32,7 @@ export function BlogPostPage() {
         <p className="mt-8 text-xs font-semibold uppercase tracking-[0.22em] text-red-600">{t(`blog.${post.category}`)}</p>
         <h1 className="mt-3 text-4xl font-bold uppercase leading-tight sm:text-5xl">{post.title}</h1>
         <p className="mt-4 text-sm text-stone-500">
-          {post.date} · {post.author} · Debre Tabor
+          {date(post.date)} · {post.author}
         </p>
       </article>
       <img
@@ -47,7 +52,7 @@ export function BlogPostPage() {
             <Link key={item.slug} to={`/blog/${item.slug}`} className="rounded-2xl bg-white p-5 ring-1 ring-stone-200/80">
               <p className="text-[11px] font-semibold uppercase tracking-wide text-red-600">{t(`blog.${item.category}`)}</p>
               <h2 className="mt-2 font-bold uppercase text-[#1A2B3C]">{item.title}</h2>
-              <p className="mt-2 text-sm text-stone-500">{item.date}</p>
+              <p className="mt-2 text-sm text-stone-500">{date(item.date)}</p>
             </Link>
           ))}
         </div>

@@ -1,4 +1,4 @@
-import { DEFAULT_SITE_CONTENT } from '@dt-academy/types';
+import { DEFAULT_BLOG_POSTS, DEFAULT_BLOG_POSTS_AM, DEFAULT_SITE_CONTENT } from '@dt-academy/types';
 import { prisma } from '../lib/prisma';
 
 function stripDash(text: string): string {
@@ -34,21 +34,31 @@ export async function ensureSiteContentTable(): Promise<void> {
   await prisma.$executeRawUnsafe(`
     ALTER TABLE "SiteContent" ADD COLUMN IF NOT EXISTS "homeJsonAm" TEXT NOT NULL DEFAULT '{}'
   `);
+  await prisma.$executeRawUnsafe(`
+    ALTER TABLE "SiteContent" ADD COLUMN IF NOT EXISTS "blogJson" TEXT NOT NULL DEFAULT '{}'
+  `);
+  await prisma.$executeRawUnsafe(`
+    ALTER TABLE "SiteContent" ADD COLUMN IF NOT EXISTS "blogJsonAm" TEXT NOT NULL DEFAULT '{}'
+  `);
 
   const existing = await prisma.siteContent.findUnique({ where: { id: 'default' } });
   if (!existing) {
-    const { home, copyAm, homeAm, ...rest } = DEFAULT_SITE_CONTENT;
+    const { home, copyAm, homeAm, blog, blogAm, ...rest } = DEFAULT_SITE_CONTENT;
     await prisma.siteContent.create({
       data: { id: 'default', ...rest },
     });
     await prisma.$executeRawUnsafe(
-      `UPDATE "SiteContent" SET "homeJson" = $1, "copyAmJson" = $2, "homeJsonAm" = $3 WHERE "id" = 'default'`,
+      `UPDATE "SiteContent" SET "homeJson" = $1, "copyAmJson" = $2, "homeJsonAm" = $3, "blogJson" = $4, "blogJsonAm" = $5 WHERE "id" = 'default'`,
       JSON.stringify(home),
       JSON.stringify(copyAm),
-      JSON.stringify(homeAm)
+      JSON.stringify(homeAm),
+      JSON.stringify(blog),
+      JSON.stringify(blogAm)
     );
     return;
   }
+
+  await seedBlogIfEmpty();
 
   const cleaned = {
     heroBlurb: stripDash(existing.heroBlurb),
@@ -63,6 +73,23 @@ export async function ensureSiteContentTable(): Promise<void> {
     cleaned.footerBlurb !== existing.footerBlurb
   ) {
     await prisma.siteContent.update({ where: { id: 'default' }, data: cleaned });
+  }
+}
+
+async function seedBlogIfEmpty(): Promise<void> {
+  try {
+    const rows = await prisma.$queryRawUnsafe<{ value: string | null }[]>(
+      `SELECT "blogJson" AS value FROM "SiteContent" WHERE "id" = 'default'`
+    );
+    const raw = rows[0]?.value;
+    if (raw && raw !== '{}' && raw !== '[]') return;
+    await prisma.$executeRawUnsafe(
+      `UPDATE "SiteContent" SET "blogJson" = $1, "blogJsonAm" = $2 WHERE "id" = 'default'`,
+      JSON.stringify(DEFAULT_BLOG_POSTS),
+      JSON.stringify(DEFAULT_BLOG_POSTS_AM)
+    );
+  } catch {
+    /* column may not exist yet on a racing first boot */
   }
 }
 

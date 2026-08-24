@@ -128,10 +128,14 @@ export const en = {
   contact: {
     eyebrow: 'Contact',
     title: 'Front office',
-    thanks: 'Thank you. The office will follow up. This form is not wired to email yet.',
+    thanks: 'Thank you. The office will follow up by phone.',
     name: 'Name',
     phone: 'Phone',
+    email: 'Email (optional)',
     message: 'Message',
+    sending: 'Sending…',
+    errSend: 'Could not send the message. Call the office or try again.',
+    errNetwork: 'Cannot reach the school site. Check your connection and try again.',
   },
   faq: {
     eyebrow: 'FAQ',

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { MONTH_NAMES, type ITuitionMonth } from '@dt-academy/types';
+import { type ITuitionMonth } from '@dt-academy/types';
+import { useFormat } from '../hooks/useFormat';
 import { Button } from '@/components/ui/button';
 import { TuitionCharts } from '../components/office/InsightsCharts';
 import { PageLoader } from '../components/layouts/PageLoader';
@@ -10,6 +11,7 @@ import { useSetTuitionMonth, useStudentTuition } from '../hooks/usePayments';
 import { useAuthStore } from '../store/authStore';
 
 export function TuitionOfficePage() {
+  const { n, dateTime, month } = useFormat();
   const { data: users = [], isLoading } = useUsers('students');
   const insights = useInsights();
   const [studentId, setStudentId] = useState('');
@@ -38,18 +40,18 @@ export function TuitionOfficePage() {
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label="Verified"
-          value={pay ? pay.verified.toLocaleString() : '—'}
-          hint={pay ? `ETB ${pay.verifiedAmountEtb.toLocaleString()}` : undefined}
+          value={pay ? n(pay.verified) : '—'}
+          hint={pay ? `ETB ${n(pay.verifiedAmountEtb)}` : undefined}
         />
         <StatCard
           label="Pending"
-          value={pay ? pay.pending.toLocaleString() : '—'}
-          hint={pay ? `ETB ${pay.pendingAmountEtb.toLocaleString()} waiting` : undefined}
+          value={pay ? n(pay.pending) : '—'}
+          hint={pay ? `ETB ${n(pay.pendingAmountEtb)} waiting` : undefined}
         />
-        <StatCard label="Rejected" value={pay ? pay.rejected.toLocaleString() : '—'} />
+        <StatCard label="Rejected" value={pay ? n(pay.rejected) : '—'} />
         <StatCard
           label="Students locked"
-          value={d ? d.students.lockedOverdue.toLocaleString() : '—'}
+          value={d ? n(d.students.lockedOverdue) : '—'}
           hint="isActive is off on the profile"
         />
       </div>
@@ -108,7 +110,7 @@ export function TuitionOfficePage() {
               <tbody>
                 {tuition.data.months.map((row: ITuitionMonth) => (
                   <tr key={row.month} className="border-b border-slate-50">
-                    <td className="px-4 py-3">{row.label}</td>
+                    <td className="px-4 py-3">{month(row.month)}</td>
                     <td className="px-4 py-3">{row.status}</td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2">
@@ -159,7 +161,7 @@ export function TuitionOfficePage() {
               <ul className="mt-3 space-y-2 text-sm text-slate-600">
                 {tuition.data.logs.map((log) => (
                   <li key={log._id}>
-                    {new Date(log.createdAt).toLocaleString()} · {log.actorName} set {MONTH_NAMES[log.month - 1]} from{' '}
+                    {dateTime(log.createdAt)} · {log.actorName} set {month(log.month)} from{' '}
                     {log.fromStatus} to {log.toStatus}
                     {log.note ? ` · ${log.note}` : ''}
                   </li>

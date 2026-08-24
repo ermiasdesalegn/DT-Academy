@@ -7,6 +7,7 @@ import { PageLoader } from '../components/layouts/PageLoader';
 import { useFamilyChildren } from '../hooks/useFamily';
 import { useCreateOutstandingPayment, useMockCompletePayment, usePaymentStatus } from '../hooks/usePayments';
 import { useT } from '../hooks/useT';
+import { useFormat } from '../hooks/useFormat';
 import { gradeLabel, methodLabel } from '../lib/labels';
 
 const OFFICE: PaymentMethod[] = ['CASH', 'BANK_TRANSFER'];
@@ -22,6 +23,7 @@ export function PayTuitionPage() {
 
 function PayForm() {
   const t = useT();
+  const { n, month } = useFormat();
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const { data, isLoading } = useFamilyChildren();
@@ -140,12 +142,12 @@ function PayForm() {
         <div className="rounded-xl bg-stone-50 px-4 py-3 text-sm text-stone-700">
           {unpaid.length ? (
             <>
-              <p className="font-semibold">{t('pay.total', { amount: total.toLocaleString() })}</p>
+              <p className="font-semibold">{t('pay.total', { amount: total })}</p>
               <ul className="mt-2 space-y-1 text-xs text-stone-600">
                 {unpaid.map((row) => (
                   <li key={row.month}>
-                    {row.label}: {row.baseEtb.toLocaleString()}
-                    {row.penaltyEtb > 0 ? ` ${t('portal.lateAdd', { amount: row.penaltyEtb.toLocaleString() })}` : ''} ETB
+                    {month(row.month)}: {n(row.baseEtb)}
+                    {row.penaltyEtb > 0 ? ` ${t('portal.lateAdd', { amount: row.penaltyEtb })}` : ''} ETB
                   </li>
                 ))}
               </ul>
@@ -196,7 +198,7 @@ function PayForm() {
           type="submit"
           disabled={create.isPending || !unpaid.length}
         >
-          {create.isPending ? t('pay.starting') : t('pay.payEtb', { amount: total.toLocaleString() })}
+          {create.isPending ? t('pay.starting') : t('pay.payEtb', { amount: total })}
         </Button>
       </form>
     </div>

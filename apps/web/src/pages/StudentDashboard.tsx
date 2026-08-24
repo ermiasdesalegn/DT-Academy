@@ -3,12 +3,14 @@ import { BookOpen, CalendarCheck } from 'lucide-react';
 import { PHOTOS } from '../lib/schoolPhotos';
 import { PageLoader } from '../components/layouts/PageLoader';
 import { useStudentPortal } from '../hooks/useFamily';
+import { useFormat } from '../hooks/useFormat';
 import { useT } from '../hooks/useT';
 import { attendanceStatusLabel } from '../lib/labels';
 import { useAuthStore } from '../store/authStore';
 
 export function StudentDashboard() {
   const t = useT();
+  const { date } = useFormat();
   const name = useAuthStore((s) => s.user?.name ?? 'Student');
   const first = name.split(' ')[0];
   const { data, isLoading, error } = useStudentPortal();
@@ -77,7 +79,7 @@ export function StudentDashboard() {
                   <li key={`${row.courseName}-${row.date}`} className="flex justify-between gap-3">
                     <span>
                       {row.courseName}
-                      <span className="ml-2 text-teal-200/70">{row.date}</span>
+                      <span className="ml-2 text-teal-200/70">{date(row.date)}</span>
                     </span>
                     <span className="font-semibold">{attendanceStatusLabel(row.status)}</span>
                   </li>

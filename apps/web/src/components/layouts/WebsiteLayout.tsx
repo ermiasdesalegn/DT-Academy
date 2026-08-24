@@ -6,6 +6,7 @@ import { useAuthStore } from '../../store/authStore';
 import { homePath } from '../../lib/homePath';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useLocalizedSite } from '../../hooks/useLocalizedSite';
+import { useFormat } from '../../hooks/useFormat';
 import { useT } from '../../hooks/useT';
 import { LanguageSwitch } from '../LanguageSwitch';
 
@@ -20,6 +21,7 @@ const NAV = [
 
 export function WebsiteLayout() {
   const t = useT();
+  const { hours } = useFormat();
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const navigate = useNavigate();
@@ -194,7 +196,7 @@ export function WebsiteLayout() {
               </li>
               <li className="flex gap-2">
                 <Clock size={16} className="mt-0.5 shrink-0 text-red-400" />
-                {site.hours}
+                {hours(site.hours)}
               </li>
             </ul>
           </div>

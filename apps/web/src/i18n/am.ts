@@ -129,10 +129,14 @@ export const am: Messages = {
   contact: {
     eyebrow: 'ያግኙን',
     title: 'የፊት ቢሮ',
-    thanks: 'አመሰግናለሁ። ቢሮው ይከታተላል። ይህ ቅጽ እስካሁን ከኢሜይል ጋር አልተገናኘም።',
+    thanks: 'አመሰግናለሁ። ቢሮው በስልክ ይከታተላል።',
     name: 'ስም',
     phone: 'ስልክ',
+    email: 'ኢሜይል (አማራጭ)',
     message: 'መልእክት',
+    sending: 'በመላክ ላይ…',
+    errSend: 'መልእክቱ አልተላከም። ቢሮውን ይደውሉ ወይም እንደገና ይሞክሩ።',
+    errNetwork: 'ድረ-ገጹ አልተገኘም። ግንኙነትዎን ይፈትሹ።',
   },
   faq: {
     eyebrow: 'ጥያቄዎች',

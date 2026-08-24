@@ -25,3 +25,9 @@ services:
         sync: false
       - key: SEED_ADMIN_NAME
         sync: false
+      - key: CONTACT_TO
+        sync: false
+      - key: CONTACT_FROM
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false

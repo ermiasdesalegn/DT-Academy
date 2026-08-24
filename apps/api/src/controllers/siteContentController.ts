@@ -1,9 +1,13 @@
 import type { Request, Response } from 'express';
 import {
+  DEFAULT_BLOG_POSTS,
+  DEFAULT_BLOG_POSTS_AM,
   DEFAULT_HOME_PAGE_AM,
   DEFAULT_SITE_CONTENT,
+  mergeBlogPosts,
   mergeHomePage,
   mergeSiteCopyAm,
+  type IBlogPost,
   type IHomePage,
   type ISiteContent,
   type ISiteLocaleCopy,
@@ -28,7 +32,10 @@ const COPY_KEYS = [
 
 type SiteCopy = Pick<ISiteContent, (typeof COPY_KEYS)[number]>;
 
-async function readJsonColumn(column: 'homeJson' | 'homeJsonAm' | 'copyAmJson', id = 'default'): Promise<unknown> {
+async function readJsonColumn(
+  column: 'homeJson' | 'homeJsonAm' | 'copyAmJson' | 'blogJson' | 'blogJsonAm',
+  id = 'default'
+): Promise<unknown> {
   try {
     const rows = await prisma.$queryRawUnsafe<{ value: string | null }[]>(
       `SELECT "${column}" AS value FROM "SiteContent" WHERE "id" = $1`,
@@ -42,7 +49,14 @@ async function readJsonColumn(column: 'homeJson' | 'homeJsonAm' | 'copyAmJson', 
   }
 }
 
-function toDto(row: SiteCopy, home: IHomePage, copyAm: ISiteLocaleCopy, homeAm: IHomePage): ISiteContent {
+function toDto(
+  row: SiteCopy,
+  home: IHomePage,
+  copyAm: ISiteLocaleCopy,
+  homeAm: IHomePage,
+  blog: IBlogPost[],
+  blogAm: IBlogPost[]
+): ISiteContent {
   return {
     schoolName: row.schoolName,
     city: row.city,
@@ -59,6 +73,8 @@ function toDto(row: SiteCopy, home: IHomePage, copyAm: ISiteLocaleCopy, homeAm: 
     home,
     copyAm,
     homeAm,
+    blog,
+    blogAm,
   };
 }
 
@@ -66,7 +82,7 @@ async function ensureRow() {
   await ensureSiteContentTable();
   const existing = await prisma.siteContent.findUnique({ where: { id: 'default' } });
   if (existing) return existing;
-  const { home: _h, copyAm: _c, homeAm: _a, ...rest } = DEFAULT_SITE_CONTENT;
+  const { home: _h, copyAm: _c, homeAm: _a, blog: _b, blogAm: _ba, ...rest } = DEFAULT_SITE_CONTENT;
   return prisma.siteContent.create({
     data: { id: 'default', ...rest },
   });
@@ -77,6 +93,8 @@ function parseBody(body: unknown): {
   home: IHomePage;
   copyAm: ISiteLocaleCopy;
   homeAm: IHomePage;
+  blog: IBlogPost[];
+  blogAm: IBlogPost[];
 } | null {
   if (!body || typeof body !== 'object') return null;
   const src = body as Record<string, unknown>;
@@ -93,6 +111,8 @@ function parseBody(body: unknown): {
     home: mergeHomePage(src.home),
     copyAm: mergeSiteCopyAm(src.copyAm),
     homeAm: mergeHomePage(src.homeAm, DEFAULT_HOME_PAGE_AM),
+    blog: mergeBlogPosts(src.blog, DEFAULT_BLOG_POSTS),
+    blogAm: mergeBlogPosts(src.blogAm, DEFAULT_BLOG_POSTS_AM),
   };
 }
 
@@ -102,7 +122,9 @@ export async function getSiteContent(_req: Request, res: Response): Promise<void
     const home = mergeHomePage(await readJsonColumn('homeJson'));
     const copyAm = mergeSiteCopyAm(await readJsonColumn('copyAmJson'));
     const homeAm = mergeHomePage(await readJsonColumn('homeJsonAm'), DEFAULT_HOME_PAGE_AM);
-    res.json(toDto(row, home, copyAm, homeAm));
+    const blog = mergeBlogPosts(await readJsonColumn('blogJson'), DEFAULT_BLOG_POSTS);
+    const blogAm = mergeBlogPosts(await readJsonColumn('blogJsonAm'), DEFAULT_BLOG_POSTS_AM);
+    res.json(toDto(row, home, copyAm, homeAm, blog, blogAm));
   } catch {
     res.json(DEFAULT_SITE_CONTENT);
   }
@@ -120,12 +142,14 @@ export async function updateSiteContent(req: Request, res: Response): Promise<vo
     data: parsed.copy,
   });
   await prisma.$executeRawUnsafe(
-    `UPDATE "SiteContent" SET "homeJson" = $1, "copyAmJson" = $2, "homeJsonAm" = $3 WHERE "id" = 'default'`,
+    `UPDATE "SiteContent" SET "homeJson" = $1, "copyAmJson" = $2, "homeJsonAm" = $3, "blogJson" = $4, "blogJsonAm" = $5 WHERE "id" = 'default'`,
     JSON.stringify(parsed.home),
     JSON.stringify(parsed.copyAm),
-    JSON.stringify(parsed.homeAm)
+    JSON.stringify(parsed.homeAm),
+    JSON.stringify(parsed.blog),
+    JSON.stringify(parsed.blogAm)
   );
-  res.json(toDto(row, parsed.home, parsed.copyAm, parsed.homeAm));
+  res.json(toDto(row, parsed.home, parsed.copyAm, parsed.homeAm, parsed.blog, parsed.blogAm));
 }
 
 export async function uploadSiteImage(req: Request, res: Response): Promise<void> {

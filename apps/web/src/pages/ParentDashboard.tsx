@@ -7,7 +7,8 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { PageLoader } from '../components/layouts/PageLoader';
 import { useFamilyChildren } from '../hooks/useFamily';
 import { useSiteContent } from '../hooks/useSiteContent';
-import { useLocale, useT } from '../hooks/useT';
+import { useFormat } from '../hooks/useFormat';
+import { useT } from '../hooks/useT';
 import { attendanceStatusLabel, gradeLabel } from '../lib/labels';
 import { PHOTOS } from '../lib/schoolPhotos';
 import { useAuthStore } from '../store/authStore';
@@ -41,7 +42,7 @@ export function ParentDashboard() {
           {due > 0 ? (
             <div className="mt-5 flex flex-wrap items-center gap-3">
               <span className="rounded-full bg-white/15 px-4 py-1.5 text-sm text-white backdrop-blur">
-                {t('portal.dueEtb', { amount: due.toLocaleString() })}
+                {t('portal.dueEtb', { amount: due })}
               </span>
               <Link
                 to="#payment"
@@ -279,6 +280,7 @@ function ReportTab({
 
 function PaymentTab({ child }: { child: IFamilyChild }) {
   const t = useT();
+  const { n, month } = useFormat();
   const rows = child.tuitionMonths ?? [];
   const unpaid = rows.filter((r) => r.status === 'UNPAID');
   const pending = rows.filter((r) => r.status === 'PENDING');
@@ -293,7 +295,7 @@ function PaymentTab({ child }: { child: IFamilyChild }) {
       <h2 className="mt-1 font-serif text-3xl text-stone-900">{t('portal.payments')}</h2>
       <p className="mt-2 text-sm text-stone-500">
         {unpaid.length
-          ? t('portal.dueHint', { amount: total.toLocaleString() })
+          ? t('portal.dueHint', { amount: total })
           : pending.length
             ? t('portal.pendingHint')
             : t('portal.nothingOutstanding')}
@@ -306,10 +308,10 @@ function PaymentTab({ child }: { child: IFamilyChild }) {
             className="flex items-center justify-between border-b border-stone-100 px-5 py-3.5 last:border-0"
           >
             <div>
-              <p className="text-sm font-medium text-stone-800">{row.label}</p>
+              <p className="text-sm font-medium text-stone-800">{month(row.month)}</p>
               <p className="text-xs text-stone-400">
-                {row.baseEtb.toLocaleString()} ETB
-                {row.penaltyEtb > 0 ? ` ${t('portal.lateAdd', { amount: row.penaltyEtb.toLocaleString() })}` : ''}
+                {n(row.baseEtb)} ETB
+                {row.penaltyEtb > 0 ? ` ${t('portal.lateAdd', { amount: row.penaltyEtb })}` : ''}
               </p>
             </div>
             <span
@@ -341,7 +343,7 @@ function PaymentTab({ child }: { child: IFamilyChild }) {
           className="mt-6 inline-flex items-center gap-2 rounded-full bg-teal-800 px-5 py-2.5 text-sm font-semibold text-white hover:bg-teal-900"
         >
           <Wallet size={16} />
-          {t('portal.payAmount', { amount: total.toLocaleString() })}
+          {t('portal.payAmount', { amount: total })}
         </Link>
       ) : null}
     </div>
@@ -350,6 +352,7 @@ function PaymentTab({ child }: { child: IFamilyChild }) {
 
 function AttendanceTab({ rows }: { rows: IFamilyAttendance[] }) {
   const t = useT();
+  const { date } = useFormat();
   return (
     <div className="mt-8">
       <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800/80">
@@ -366,7 +369,7 @@ function AttendanceTab({ rows }: { rows: IFamilyAttendance[] }) {
             <li key={`${row.courseName}-${row.date}`} className="flex items-center justify-between px-5 py-3 text-sm">
               <div>
                 <p className="font-medium text-stone-800">{row.courseName}</p>
-                <p className="text-xs text-stone-400">{row.date}</p>
+                <p className="text-xs text-stone-400">{date(row.date)}</p>
               </div>
               <span className="text-xs font-semibold uppercase tracking-wide text-teal-900">{attendanceStatusLabel(row.status)}</span>
             </li>
@@ -379,8 +382,7 @@ function AttendanceTab({ rows }: { rows: IFamilyAttendance[] }) {
 
 function NoticesTab({ phone, announcements }: { phone: string; announcements: IPortalAnnouncement[] }) {
   const t = useT();
-  const locale = useLocale();
-  const dateLocale = locale === 'am' ? 'am-ET' : 'en-GB';
+  const { date } = useFormat();
   return (
     <div className="mt-8">
       <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-teal-800/80">{t('portal.school')}</p>
@@ -392,7 +394,7 @@ function NoticesTab({ phone, announcements }: { phone: string; announcements: IP
           {announcements.map((item) => (
             <li key={item._id} className="rounded-[1.25rem] bg-white p-5 shadow-sm">
               <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-400">
-                {new Date(item.createdAt).toLocaleDateString(dateLocale)}
+                {date(item.createdAt)}
               </p>
               <p className="mt-1 font-medium text-stone-900">{item.title}</p>
               <p className="mt-2 whitespace-pre-wrap text-sm text-stone-600">{item.content}</p>

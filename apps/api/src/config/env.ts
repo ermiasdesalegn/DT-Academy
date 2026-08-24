@@ -11,8 +11,12 @@ export const env = {
   seedAdminEmail: process.env.SEED_ADMIN_EMAIL ?? 'director@dt-academy.local',
   seedAdminPassword: process.env.SEED_ADMIN_PASSWORD ?? 'ChangeMeNow!',
   seedAdminName: process.env.SEED_ADMIN_NAME ?? 'Academy Director',
+  nodeEnv: process.env.NODE_ENV === 'production' ? 'production' : 'development',
   paymentsMode: (process.env.PAYMENTS_MODE === 'sandbox' ? 'sandbox' : 'mock') as 'mock' | 'sandbox',
   publicWebUrl: process.env.PUBLIC_WEB_URL ?? 'http://localhost:5173',
+  resendApiKey: process.env.RESEND_API_KEY ?? '',
+  contactTo: process.env.CONTACT_TO ?? '',
+  contactFrom: process.env.CONTACT_FROM ?? '',
   telebirr: {
     baseUrl:
       process.env.TELEBIRR_BASE_URL ??

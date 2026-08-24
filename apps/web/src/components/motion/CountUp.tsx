@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useFormat } from '../../hooks/useFormat';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 
 export function CountUp({
@@ -10,6 +11,7 @@ export function CountUp({
   suffix?: string;
   duration?: number;
 }) {
+  const { n } = useFormat();
   const reduced = useReducedMotion();
   const [value, setValue] = useState(reduced ? to : 0);
   const started = useRef(false);
@@ -44,7 +46,7 @@ export function CountUp({
 
   return (
     <span ref={host}>
-      {value.toLocaleString()}
+      {n(value)}
       {suffix}
     </span>
   );
