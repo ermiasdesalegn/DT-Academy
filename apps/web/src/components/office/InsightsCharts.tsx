@@ -12,6 +12,7 @@ import {
 } from 'recharts';
 import type { IInsights } from '@dt-academy/types';
 import { methodLabel } from '../../lib/labels';
+import { useT } from '../../hooks/useT';
 
 const NAVY = '#1A2B3C';
 const RED = '#dc2626';
@@ -19,14 +20,15 @@ const TEAL = '#0f766e';
 const AMBER = '#d97706';
 
 export function EnrollmentCharts({ data }: { data: IInsights }) {
+  const t = useT();
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      <section className="rounded-2xl border border-slate-200 bg-white p-5">
-        <h2 className="text-sm font-semibold text-slate-900">Students by academic year</h2>
-        <p className="mt-1 text-sm text-slate-500">Enrolment on the roll, not calendar sign-ups.</p>
+      <section className="rounded-lg border border-slate-200 bg-white p-5">
+        <h2 className="text-sm font-semibold text-slate-900">{t('office.byYear')}</h2>
+        <p className="mt-1 text-sm text-slate-500">{t('office.byYearHint')}</p>
         <div className="mt-4 h-64">
           {data.byYear.length === 0 ? (
-            <p className="text-sm text-slate-500">No students yet.</p>
+            <p className="text-sm text-slate-500">{t('office.noStudentsYet')}</p>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={data.byYear}>
@@ -34,15 +36,15 @@ export function EnrollmentCharts({ data }: { data: IInsights }) {
                 <XAxis dataKey="label" tick={{ fontSize: 12 }} />
                 <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
                 <Tooltip />
-                <Bar dataKey="count" name="Students" fill={NAVY} radius={[6, 6, 0, 0]} />
+                <Bar dataKey="count" name={t('office.students')} fill={NAVY} radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           )}
         </div>
       </section>
-      <section className="rounded-2xl border border-slate-200 bg-white p-5">
-        <h2 className="text-sm font-semibold text-slate-900">Students by grade</h2>
-        <p className="mt-1 text-sm text-slate-500">KG through Grade 8 on this campus.</p>
+      <section className="rounded-lg border border-slate-200 bg-white p-5">
+        <h2 className="text-sm font-semibold text-slate-900">{t('office.byGrade')}</h2>
+        <p className="mt-1 text-sm text-slate-500">{t('office.byGradeHint')}</p>
         <div className="mt-4 h-64">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data.byGrade}>
@@ -50,7 +52,7 @@ export function EnrollmentCharts({ data }: { data: IInsights }) {
               <XAxis dataKey="label" tick={{ fontSize: 12 }} />
               <YAxis allowDecimals={false} tick={{ fontSize: 12 }} />
               <Tooltip />
-              <Bar dataKey="count" name="Students" fill={RED} radius={[6, 6, 0, 0]} />
+              <Bar dataKey="count" name={t('office.students')} fill={RED} radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -74,7 +76,7 @@ export function TuitionCharts({ data }: { data: IInsights }) {
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
-      <section className="rounded-2xl border border-slate-200 bg-white p-5">
+      <section className="rounded-lg border border-slate-200 bg-white p-5">
         <h2 className="text-sm font-semibold text-slate-900">Receipts by month</h2>
         <p className="mt-1 text-sm text-slate-500">Verified vs still waiting, by tuition month.</p>
         <div className="mt-4 h-64">
@@ -90,7 +92,7 @@ export function TuitionCharts({ data }: { data: IInsights }) {
           </ResponsiveContainer>
         </div>
       </section>
-      <section className="rounded-2xl border border-slate-200 bg-white p-5">
+      <section className="rounded-lg border border-slate-200 bg-white p-5">
         <h2 className="text-sm font-semibold text-slate-900">How families pay</h2>
         <p className="mt-1 text-sm text-slate-500">Count of receipts per method.</p>
         <div className="mt-4 flex h-64 items-center gap-4">
