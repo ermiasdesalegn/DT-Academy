@@ -17,8 +17,9 @@ import { attendanceRouter } from './routes/attendance';
 import { announcementsRouter } from './routes/announcements';
 import { contactRouter } from './routes/contact';
 import { seedDirector } from './seed/seedDirector';
-import { ensurePaymentMonthColumn, ensureSiteContentTable } from './lib/ensureSiteContent';
+import { ensurePaymentMonthColumn, ensureSiteContentTable, ensureFormerPeopleColumns } from './lib/ensureSiteContent';
 import { ensureUploadDir, UPLOAD_DIR } from './lib/uploads';
+import { isRetryable } from './lib/prisma';
 
 const app = express();
 
@@ -44,6 +45,10 @@ app.use('/api/site-content', siteContentRouter);
 app.use('/api/contact', contactRouter);
 app.use('/api/uploads', express.static(UPLOAD_DIR));
 
+app.use('/api', (_req, res) => {
+  res.status(404).json({ message: 'Not found' });
+});
+
 const webDist = path.resolve(__dirname, '../../web/dist');
 if (fs.existsSync(webDist)) {
   app.use(express.static(webDist));
@@ -58,6 +63,11 @@ if (fs.existsSync(webDist)) {
 
 app.use((err: unknown, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error(err);
+  if (res.headersSent) return;
+  if (isRetryable(err)) {
+    res.status(503).json({ message: 'Database is waking up. Wait a few seconds and try again.' });
+    return;
+  }
   res.status(500).json({ message: 'Server error. Try again in a moment.' });
 });
 
@@ -72,6 +82,7 @@ async function start(): Promise<void> {
     await seedDirector().catch((err: unknown) => console.warn('Seed skipped', err));
     await ensureSiteContentTable().catch((err: unknown) => console.warn('Site content table skipped', err));
     await ensurePaymentMonthColumn().catch((err: unknown) => console.warn('Payment month column skipped', err));
+    await ensureFormerPeopleColumns().catch((err: unknown) => console.warn('Former people columns skipped', err));
   } else {
     console.warn('API is up, but Postgres is still unreachable. Login will retry when Neon wakes.');
   }

@@ -99,6 +99,8 @@ export function AnnouncementsPage() {
 
       {list.isLoading ? (
         <PageLoader label="Loading notices" compact />
+      ) : list.isError ? (
+        <p className="text-sm text-red-600">Could not load notices. Keep the API running.</p>
       ) : (
       <ul className="space-y-3">
         {(list.data ?? []).map((item) => (

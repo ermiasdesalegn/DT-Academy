@@ -29,6 +29,8 @@ import { AdmitStudentPage } from './pages/AdmitStudentPage';
 import { WebsiteContentPage } from './pages/WebsiteContentPage';
 import { TuitionOfficePage } from './pages/TuitionOfficePage';
 import { ClassesOfficePage } from './pages/ClassesOfficePage';
+import { PersonHistoryPage } from './pages/PersonHistoryPage';
+import { NotFoundPage } from './pages/NotFoundPage';
 import { ScreenLoader } from './components/ScreenLoader';
 import { useLocaleStore } from './store/localeStore';
 import { useT } from './hooks/useT';
@@ -85,6 +87,7 @@ export default function App() {
             </Route>
             <Route element={<RoleGate allow={['DIRECTOR', 'IT_ADMIN', 'MANAGER']} />}>
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/people/:id/history" element={<PersonHistoryPage />} />
               <Route path="/admin/admissions" element={<AdmitStudentPage />} />
               <Route path="/admin/tuition" element={<TuitionOfficePage />} />
               <Route path="/admin/announcements" element={<AnnouncementsPage />} />
@@ -123,7 +126,7 @@ export default function App() {
         <Route path="/parent/pay" element={<Navigate to="/portal/pay" replace />} />
         <Route path="/student" element={<Navigate to="/portal/dashboard" replace />} />
         <Route path="/portal/student" element={<Navigate to="/portal/dashboard" replace />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
     </LocaleRoot>

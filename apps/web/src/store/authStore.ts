@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { create } from 'zustand';
 import type { IAuthUser } from '@dt-academy/types';
 import { api } from '../services/api';
@@ -34,8 +35,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const { data } = await api.get<{ user: IAuthUser }>('/auth/me');
       set({ user: data.user });
-    } catch {
-      get().logout();
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        const status = err.response?.status;
+        if (status === 401 || status === 403 || status === 404) {
+          get().logout();
+        }
+        return;
+      }
+      // Network / unknown: keep the token and retry on next visit
     }
   },
 }));

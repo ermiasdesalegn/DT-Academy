@@ -12,6 +12,8 @@ function isRetryable(err: unknown): boolean {
   );
 }
 
+export { isRetryable };
+
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }

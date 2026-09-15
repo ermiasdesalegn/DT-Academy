@@ -88,6 +88,10 @@ export async function me(req: Request, res: Response): Promise<void> {
     res.status(404).json({ message: 'User not found' });
     return;
   }
+  if (!user.isActive) {
+    res.status(403).json({ message: 'Account is inactive' });
+    return;
+  }
 
   res.json({ user: toAuthUser(user) });
 }

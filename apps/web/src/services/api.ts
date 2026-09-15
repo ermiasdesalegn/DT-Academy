@@ -11,3 +11,20 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+api.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (axios.isAxiosError(err) && err.response?.status === 401) {
+      const url = err.config?.url ?? '';
+      const isAuthAttempt = url.includes('/auth/login') || url.includes('/auth/me');
+      if (!isAuthAttempt && localStorage.getItem('dt-token')) {
+        localStorage.removeItem('dt-token');
+        if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login')) {
+          window.location.assign('/login');
+        }
+      }
+    }
+    return Promise.reject(err);
+  }
+);
