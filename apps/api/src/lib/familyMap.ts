@@ -27,6 +27,7 @@ export type ProfileWithPortal = {
   section: string;
   academicYear: string;
   isActive: boolean;
+  isFormer: boolean;
   user: { name: string };
   payments: Array<PaymentMonthRow & { academicYear: string; amount: unknown; method: PaymentMethod; createdAt: Date }>;
   results: ResultRow[];
@@ -86,7 +87,9 @@ export function mapFamilyChild(
       section: row.section,
       academicYear: row.academicYear,
       isActive: row.isActive,
+      isFormer: row.isFormer,
     },
+    isFormer: row.isFormer,
     pendingPayment: pending
       ? {
           amount: Number(pending.amount),
