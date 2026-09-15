@@ -135,3 +135,15 @@ export async function ensurePaymentMonthColumn(): Promise<void> {
     ON "Homeroom" ("gradeLevel", "section", "academicYear")
   `);
 }
+
+export async function ensureFormerPeopleColumns(): Promise<void> {
+  await prisma.$executeRawUnsafe(`
+    ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "leftAt" TIMESTAMP(3)
+  `);
+  await prisma.$executeRawUnsafe(`
+    ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "leftReason" TEXT
+  `);
+  await prisma.$executeRawUnsafe(`
+    ALTER TABLE "StudentProfile" ADD COLUMN IF NOT EXISTS "isFormer" BOOLEAN NOT NULL DEFAULT false
+  `);
+}

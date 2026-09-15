@@ -161,6 +161,7 @@ export async function admitStudent(req: Request, res: Response): Promise<void> {
       section: profile.section,
       academicYear: profile.academicYear,
       isActive: profile.isActive,
+      isFormer: profile.isFormer ?? false,
     },
     studentLoginEnabled: allowLogin,
     ...(allowLogin ? { studentTemporaryPassword } : {}),

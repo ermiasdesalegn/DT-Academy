@@ -58,15 +58,17 @@ enum AnnouncementAudience {
 }
 
 model User {
-  id           String   @id @default(cuid())
+  id           String    @id @default(cuid())
   name         String
-  email        String   @unique
+  email        String    @unique
   passwordHash String
   phone        String?
   role         UserRole
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  isActive     Boolean   @default(true)
+  leftAt       DateTime?
+  leftReason   String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   studentProfile     StudentProfile?
   childrenAsParent   StudentProfile[] @relation("ParentChildren")
@@ -94,6 +96,7 @@ model StudentProfile {
   section         String
   academicYear    String
   isActive        Boolean @default(false)
+  isFormer        Boolean @default(false)
 
   results    StudentResult[]
   payments   Payment[]

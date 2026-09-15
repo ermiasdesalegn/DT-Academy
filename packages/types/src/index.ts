@@ -46,6 +46,8 @@ export interface IUser {
   phone?: string;
   role: UserRole;
   isActive: boolean;
+  leftAt?: string;
+  leftReason?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -59,6 +61,7 @@ export interface IStudentProfile {
   section: string;
   academicYear: string;
   isActive: boolean;
+  isFormer: boolean;
 }
 
 export interface ICourse {
@@ -154,6 +157,8 @@ export interface IAuthUser {
   phone?: string;
   role: UserRole;
   isActive: boolean;
+  leftAt?: string;
+  leftReason?: string;
 }
 
 export interface IRegisterRequest {
@@ -197,6 +202,64 @@ export interface IAdmitStudentResponse {
 
 export interface IListedUser extends IAuthUser {
   studentProfile?: IStudentProfile;
+}
+
+export interface IPersonHistoryResult {
+  subject: string;
+  teacherName: string;
+  term: number;
+  academicYear: string;
+  letterGrade: string;
+  totalScore: number;
+}
+
+export interface IPersonHistoryAttendance {
+  courseName: string;
+  date: string;
+  status: AttendanceStatus;
+}
+
+export interface IPersonHistorySheet {
+  courseName: string;
+  courseCode: string;
+  term: number;
+  academicYear: string;
+  status: GradeSheetStatus;
+  submittedAt?: string;
+  approvedAt?: string;
+}
+
+export interface IPersonHistoryCourse {
+  name: string;
+  code: string;
+  gradeLevel: number;
+  section: string;
+  academicYear: string;
+}
+
+export interface IPersonHistory {
+  user: IListedUser;
+  results: IPersonHistoryResult[];
+  attendance: IPersonHistoryAttendance[];
+  attendanceSummary: { present: number; absent: number; late: number; excused: number; total: number };
+  coursesTaught: IPersonHistoryCourse[];
+  sheets: IPersonHistorySheet[];
+  attendanceRecordedCount: number;
+}
+
+export interface IFamilyChild {
+  name: string;
+  profile: IStudentProfile;
+  isFormer?: boolean;
+  pendingPayment?: {
+    amount: number;
+    method: PaymentMethod;
+    referencePNR: string;
+  };
+  tuitionMonths: ITuitionMonth[];
+  teachers: IFamilyTeacher[];
+  results: IFamilyResult[];
+  attendance: IFamilyAttendance[];
 }
 
 export interface ICreatePaymentRequest {
@@ -254,20 +317,6 @@ export interface IInsights {
     approved: number;
     unlockRequested: number;
   };
-}
-
-export interface IFamilyChild {
-  name: string;
-  profile: IStudentProfile;
-  pendingPayment?: {
-    amount: number;
-    method: PaymentMethod;
-    referencePNR: string;
-  };
-  tuitionMonths: ITuitionMonth[];
-  teachers: IFamilyTeacher[];
-  results: IFamilyResult[];
-  attendance: IFamilyAttendance[];
 }
 
 export interface IFamilyTeacher {
