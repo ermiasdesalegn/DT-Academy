@@ -10,7 +10,7 @@ export function ClassesOfficePage() {
   const classes = useClasses();
   const teachers = useUsers('staff');
   const setHome = useSetHomeroom();
-  const teacherList = (teachers.data ?? []).filter((u) => u.role === 'TEACHER');
+  const teacherList = (teachers.data ?? []).filter((u) => u.role === 'TEACHER' && !u.leftAt);
   const list = classes.data ?? [];
   const [picked, setPicked] = useState<IClassGroup | null>(null);
   const current = picked ?? list[0];
@@ -94,17 +94,22 @@ export function ClassesOfficePage() {
                     onClick={() => {
                       const el = document.getElementById('homeroom-teacher') as HTMLSelectElement | null;
                       if (!el?.value) return;
-                      void setHome.mutateAsync({
-                        gradeLevel: current.gradeLevel,
-                        section: current.section,
-                        academicYear: current.academicYear,
-                        teacherId: el.value,
-                      });
+                      void setHome
+                        .mutateAsync({
+                          gradeLevel: current.gradeLevel,
+                          section: current.section,
+                          academicYear: current.academicYear,
+                          teacherId: el.value,
+                        })
+                        .catch(() => undefined);
                     }}
                   >
                     Save
                   </Button>
                 </div>
+                {setHome.isError ? (
+                  <p className="mt-2 text-sm text-red-600">Could not save the representative teacher.</p>
+                ) : null}
               </div>
 
               <OverallTable

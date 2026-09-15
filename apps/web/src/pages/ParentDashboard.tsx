@@ -73,6 +73,7 @@ export function ParentDashboard() {
                       }`}
                     >
                       {child.name.split(' ')[0]}
+                      {child.isFormer || child.profile.isFormer ? ` · ${t('portal.formerStudent')}` : ''}
                     </button>
                   );
                 })}
@@ -116,6 +117,7 @@ function ChildWorkspace({
       <PortalBoard
         variant="parent"
         childName={child.name}
+        isFormer={child.isFormer || child.profile.isFormer}
         results={child.results ?? []}
         teachers={teachers}
         attendance={child.attendance ?? []}

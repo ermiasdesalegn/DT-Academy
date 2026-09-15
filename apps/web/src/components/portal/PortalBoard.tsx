@@ -22,6 +22,7 @@ function initials(name: string) {
 export function PortalBoard({
   variant,
   childName,
+  isFormer,
   results,
   teachers,
   attendance,
@@ -33,6 +34,7 @@ export function PortalBoard({
 }: {
   variant: 'parent' | 'student';
   childName?: string;
+  isFormer?: boolean;
   results: IFamilyResult[];
   teachers: IFamilyTeacher[];
   attendance: IFamilyAttendance[];
@@ -59,12 +61,21 @@ export function PortalBoard({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
-          {t(variant === 'student' ? 'portal.overviewTitleSelf' : 'portal.overviewTitle')}
-        </h1>
+        <div className="flex flex-wrap items-center gap-2">
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">
+            {t(variant === 'student' ? 'portal.overviewTitleSelf' : 'portal.overviewTitle')}
+          </h1>
+          {isFormer ? (
+            <span className="rounded-md bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
+              {t('portal.formerStudent')}
+            </span>
+          ) : null}
+        </div>
         <p className="mt-1 text-sm text-slate-500">
           {childName ? `${childName} · ` : ''}
-          {t(variant === 'student' ? 'portal.overviewHintSelf' : 'portal.overviewHint')}
+          {isFormer
+            ? t('portal.overviewHintFormer')
+            : t(variant === 'student' ? 'portal.overviewHintSelf' : 'portal.overviewHint')}
         </p>
       </div>
 

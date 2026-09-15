@@ -15,95 +15,168 @@ import {
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCreatePayment } from '../hooks/usePayments';
 import { PageLoader } from '../components/layouts/PageLoader';
-import { useUsers } from '../hooks/useUsers';
+import { EmptyState } from '../components/layouts/Page';
+import { useMarkFormer, useRestoreUser, useUsers, type PeopleGroup } from '../hooks/useUsers';
+import { useT } from '../hooks/useT';
 import { gradeLabel } from '../lib/labels';
 import { api } from '../services/api';
-
-type PeopleGroup = 'all' | 'students' | 'parents' | 'staff';
 
 const STAFF_ROLES: UserRole[] = ['DIRECTOR', 'IT_ADMIN', 'MANAGER', 'TEACHER'];
 
 export function AdminDashboard() {
+  const t = useT();
   const [group, setGroup] = useState<PeopleGroup>('all');
   const { data: users = [], isLoading, error } = useUsers(group);
+  const markFormer = useMarkFormer();
+  const restore = useRestoreUser();
   const [staffOpen, setStaffOpen] = useState(false);
   const [payStudent, setPayStudent] = useState<IListedUser | null>(null);
   const [passwordUser, setPasswordUser] = useState<IListedUser | null>(null);
+  const [formerTarget, setFormerTarget] = useState<IListedUser | null>(null);
+  const [formerReason, setFormerReason] = useState('');
+  const [actionError, setActionError] = useState('');
+  const isFormerTab = group === 'former-students' || group === 'former-teachers';
+
+  async function confirmMarkFormer() {
+    if (!formerTarget) return;
+    setActionError('');
+    try {
+      await markFormer.mutateAsync({ id: formerTarget._id, reason: formerReason || undefined });
+      setFormerTarget(null);
+      setFormerReason('');
+    } catch (err) {
+      if (axios.isAxiosError(err) && typeof err.response?.data?.message === 'string') {
+        setActionError(err.response.data.message);
+      } else {
+        setActionError(t('office.formerActionError'));
+      }
+    }
+  }
+
+  async function onRestore(user: IListedUser) {
+    setActionError('');
+    try {
+      await restore.mutateAsync(user._id);
+    } catch (err) {
+      if (axios.isAxiosError(err) && typeof err.response?.data?.message === 'string') {
+        setActionError(err.response.data.message);
+      } else {
+        setActionError(t('office.formerActionError'));
+      }
+    }
+  }
 
   return (
     <div>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">People</h1>
-          <p className="mt-1 text-sm text-slate-500">
-            Staff, parents, and students on file. Record tuition against a student to unlock access.
-          </p>
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">{t('office.peopleTitle')}</h1>
+          <p className="mt-1 text-sm text-slate-500">{t('office.peopleHint')}</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" asChild>
-            <Link to="/admin/admissions">Admit student</Link>
+            <Link to="/admin/admissions">{t('office.admitStudent')}</Link>
           </Button>
           <Button type="button" onClick={() => setStaffOpen(true)}>
-            Add staff
+            {t('office.addStaff')}
           </Button>
         </div>
       </div>
 
       <Tabs value={group} onValueChange={(v) => setGroup(v as PeopleGroup)} className="mt-6">
-        <TabsList>
-          <TabsTrigger value="all">All</TabsTrigger>
-          <TabsTrigger value="students">Students</TabsTrigger>
-          <TabsTrigger value="parents">Parents</TabsTrigger>
-          <TabsTrigger value="staff">Staff</TabsTrigger>
+        <TabsList className="flex h-auto flex-wrap">
+          <TabsTrigger value="all">{t('office.tabAll')}</TabsTrigger>
+          <TabsTrigger value="students">{t('office.tabStudents')}</TabsTrigger>
+          <TabsTrigger value="parents">{t('office.tabParents')}</TabsTrigger>
+          <TabsTrigger value="staff">{t('office.tabStaff')}</TabsTrigger>
+          <TabsTrigger value="former-students">{t('office.tabFormerStudents')}</TabsTrigger>
+          <TabsTrigger value="former-teachers">{t('office.tabFormerTeachers')}</TabsTrigger>
         </TabsList>
       </Tabs>
 
-      <section className="mt-4 rounded-2xl border border-gray-200 bg-white">
+      {actionError ? <p className="mt-3 text-sm text-red-600">{actionError}</p> : null}
+
+      <section className="mt-4 rounded-lg border border-slate-200 bg-white">
         {isLoading ? (
-          <PageLoader label="Loading people" />
+          <PageLoader label={t('office.peopleLoading')} />
         ) : error ? (
-          <p className="px-6 py-10 text-sm text-red-600">Could not load people. Check that the API is running.</p>
+          <p className="px-6 py-10 text-sm text-red-600">{t('office.peopleError')}</p>
         ) : users.length === 0 ? (
-          <p className="px-6 py-10 text-sm text-slate-500">No accounts in this list yet.</p>
+          <div className="p-6">
+            <EmptyState title={t('office.peopleEmpty')} body={t('office.peopleEmptyHint')} />
+          </div>
         ) : (
-          <ul className="divide-y divide-gray-100">
-            {users.map((user) => (
-              <li key={user._id} className="flex flex-wrap items-center justify-between gap-3 px-6 py-4">
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-slate-900">{user.name}</p>
-                  <p className="text-xs text-slate-500">
-                    {user.email}
-                    {user.studentProfile
-                      ? ` · ${user.studentProfile.studentIdNumber} · ${gradeLabel(user.studentProfile.gradeLevel)} · Section ${user.studentProfile.section}`
-                      : null}
-                  </p>
-                </div>
-                <div className="flex shrink-0 items-center gap-2">
-                  <Badge variant="outline">{roleLabel(user.role)}</Badge>
-                  {user.role === 'PARENT' || user.role === 'TEACHER' ? (
-                    <Button type="button" variant="ghost" size="sm" onClick={() => setPasswordUser(user)}>
-                      Set password
-                    </Button>
-                  ) : null}
-                  {user.studentProfile ? (
-                    <>
-                      <Badge
-                        className={
-                          user.studentProfile.isActive
-                            ? 'border-0 bg-emerald-100 font-medium text-emerald-800 hover:bg-emerald-100'
-                            : 'border-0 bg-amber-100 font-medium text-amber-800 hover:bg-amber-100'
-                        }
-                      >
-                        {user.studentProfile.isActive ? 'Active & Paid' : 'Locked'}
+          <ul className="divide-y divide-slate-100">
+            {users.map((user) => {
+              const former = Boolean(user.leftAt || user.studentProfile?.isFormer);
+              const canMarkFormer =
+                !former && (user.role === 'STUDENT' || user.role === 'TEACHER') && !isFormerTab;
+              return (
+                <li key={user._id} className="flex flex-wrap items-center justify-between gap-3 px-6 py-4">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-slate-900">{user.name}</p>
+                    <p className="text-xs text-slate-500">
+                      {user.email}
+                      {user.studentProfile
+                        ? ` · ${user.studentProfile.studentIdNumber} · ${gradeLabel(user.studentProfile.gradeLevel)} · Section ${user.studentProfile.section}`
+                        : null}
+                      {user.leftAt ? ` · ${t('office.leftOn')} ${new Date(user.leftAt).toLocaleDateString()}` : null}
+                    </p>
+                    {user.leftReason ? <p className="mt-0.5 text-xs text-slate-400">{user.leftReason}</p> : null}
+                  </div>
+                  <div className="flex shrink-0 flex-wrap items-center gap-2">
+                    <Badge variant="outline">{roleLabel(user.role)}</Badge>
+                    {former ? (
+                      <Badge className="border-0 bg-slate-100 font-medium text-slate-700 hover:bg-slate-100">
+                        {t('office.formerBadge')}
                       </Badge>
-                      <Button type="button" variant="outline" size="sm" onClick={() => setPayStudent(user)}>
-                        Record payment
+                    ) : null}
+                    {user.role === 'PARENT' || user.role === 'TEACHER' ? (
+                      <Button type="button" variant="ghost" size="sm" onClick={() => setPasswordUser(user)}>
+                        {t('office.setPassword')}
                       </Button>
-                    </>
-                  ) : null}
-                </div>
-              </li>
-            ))}
+                    ) : null}
+                    {user.studentProfile && !former ? (
+                      <>
+                        <Badge
+                          className={
+                            user.studentProfile.isActive
+                              ? 'border-0 bg-emerald-100 font-medium text-emerald-800 hover:bg-emerald-100'
+                              : 'border-0 bg-amber-100 font-medium text-amber-800 hover:bg-amber-100'
+                          }
+                        >
+                          {user.studentProfile.isActive ? t('office.activePaid') : t('office.locked')}
+                        </Badge>
+                        <Button type="button" variant="outline" size="sm" onClick={() => setPayStudent(user)}>
+                          {t('office.recordPayment')}
+                        </Button>
+                      </>
+                    ) : null}
+                    {(user.role === 'STUDENT' || user.role === 'TEACHER') && (
+                      <Button type="button" variant="outline" size="sm" asChild>
+                        <Link to={`/admin/people/${user._id}/history`}>{t('office.viewHistory')}</Link>
+                      </Button>
+                    )}
+                    {canMarkFormer ? (
+                      <Button type="button" variant="ghost" size="sm" onClick={() => setFormerTarget(user)}>
+                        {t('office.markFormer')}
+                      </Button>
+                    ) : null}
+                    {former && (user.role === 'STUDENT' || user.role === 'TEACHER') ? (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={restore.isPending}
+                        onClick={() => void onRestore(user)}
+                      >
+                        {t('office.restore')}
+                      </Button>
+                    ) : null}
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>
@@ -111,6 +184,41 @@ export function AdminDashboard() {
       <AddStaffDialog open={staffOpen} onOpenChange={setStaffOpen} />
       <RecordPaymentDialog student={payStudent} onOpenChange={(open) => !open && setPayStudent(null)} />
       <SetPasswordDialog user={passwordUser} onOpenChange={(open) => !open && setPasswordUser(null)} />
+
+      <Dialog
+        open={Boolean(formerTarget)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setFormerTarget(null);
+            setFormerReason('');
+            setActionError('');
+          }
+        }}
+      >
+        <DialogContent className="rounded-2xl border-gray-200 shadow-none sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t('office.markFormer')}</DialogTitle>
+            <DialogDescription>
+              {formerTarget
+                ? t('office.markFormerHint', { name: formerTarget.name })
+                : ''}
+            </DialogDescription>
+          </DialogHeader>
+          <label className="text-sm">
+            <span className="font-medium text-slate-700">{t('office.formerReason')}</span>
+            <input
+              className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
+              value={formerReason}
+              onChange={(e) => setFormerReason(e.target.value)}
+              placeholder={t('office.formerReasonPh')}
+            />
+          </label>
+          {actionError ? <p className="text-sm text-red-600">{actionError}</p> : null}
+          <Button type="button" disabled={markFormer.isPending} onClick={() => void confirmMarkFormer()}>
+            {markFormer.isPending ? t('office.saving') : t('office.confirmFormer')}
+          </Button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
