@@ -5,14 +5,16 @@ import type { IFamilyAttendance, IFamilyChild, IFamilyTeacher, IPortalAnnounceme
 import { DEFAULT_SITE_CONTENT } from '@dt-academy/types';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { PortalBoard } from '../components/portal/PortalBoard';
+import { MemorialFeed } from '../components/memorials/MemorialFeed';
 import { PageLoader } from '../components/layouts/PageLoader';
 import { useFamilyChildren } from '../hooks/useFamily';
+import { useMemorials } from '../hooks/useMemorials';
 import { useSiteContent } from '../hooks/useSiteContent';
 import { useFormat } from '../hooks/useFormat';
 import { useT } from '../hooks/useT';
 import { attendanceStatusLabel } from '../lib/labels';
 
-type Tab = 'class' | 'report' | 'attendance' | 'payment' | 'notices';
+type Tab = 'class' | 'report' | 'attendance' | 'payment' | 'notices' | 'memorials';
 
 export function ParentDashboard() {
   const t = useT();
@@ -136,6 +138,7 @@ function ChildWorkspace({
             ['attendance', 'portal.tabAttendance'],
             ['payment', 'portal.tabPayment'],
             ['notices', 'portal.tabNotices'],
+            ['memorials', 'portal.tabMemorials'],
           ] as const
         ).map(([id, labelKey]) => (
           <button
@@ -167,6 +170,28 @@ function ChildWorkspace({
       {tab === 'attendance' ? <AttendanceTab rows={child.attendance ?? []} /> : null}
       {tab === 'payment' ? <PaymentTab child={child} /> : null}
       {tab === 'notices' ? <NoticesTab phone={officePhone} announcements={announcements} /> : null}
+      {tab === 'memorials' ? <MemorialsTab studentId={child.profile._id} /> : null}
+    </div>
+  );
+}
+
+function MemorialsTab({ studentId }: { studentId: string }) {
+  const t = useT();
+  const list = useMemorials(studentId);
+  return (
+    <div className="mt-8">
+      <p className="text-[11px] font-medium text-stone-400">{t('memorials.title')}</p>
+      <h2 className="mt-1 text-2xl font-bold tracking-tight text-black">{t('portal.tabMemorials')}</h2>
+      <p className="mt-2 text-sm text-stone-500">{t('memorials.historyHint')}</p>
+      <div className="mt-6">
+        {list.isLoading ? (
+          <PageLoader label={t('memorials.loading')} compact />
+        ) : list.isError ? (
+          <p className="text-sm text-red-600">{t('memorials.loadError')}</p>
+        ) : (
+          <MemorialFeed memorials={list.data ?? []} emptyLabel={t('memorials.emptyForStudent')} />
+        )}
+      </div>
     </div>
   );
 }

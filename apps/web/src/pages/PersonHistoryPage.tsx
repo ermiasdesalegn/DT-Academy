@@ -3,6 +3,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { EmptyState, PageHeader } from '../components/layouts/Page';
 import { PageLoader } from '../components/layouts/PageLoader';
+import { MemorialFeed } from '../components/memorials/MemorialFeed';
+import { useMemorials } from '../hooks/useMemorials';
 import { usePersonHistory } from '../hooks/useUsers';
 import { useFormat } from '../hooks/useFormat';
 import { useT } from '../hooks/useT';
@@ -15,6 +17,8 @@ export function PersonHistoryPage() {
   const { data, isLoading, error, isError } = usePersonHistory(id);
   const user = data?.user;
   const former = Boolean(user?.leftAt || user?.studentProfile?.isFormer);
+  const studentProfileId = user?.role === 'STUDENT' ? user.studentProfile?._id ?? null : null;
+  const memorials = useMemorials(studentProfileId);
 
   if (isLoading) {
     return <PageLoader label={t('office.historyLoading')} />;
@@ -34,10 +38,11 @@ export function PersonHistoryPage() {
     );
   }
 
+  const memorialRows = memorials.data ?? [];
   const hasStudentHistory = data.results.length > 0 || data.attendance.length > 0;
   const hasTeacherHistory =
     data.coursesTaught.length > 0 || data.sheets.length > 0 || data.attendanceRecordedCount > 0;
-  const empty = !hasStudentHistory && !hasTeacherHistory;
+  const empty = !hasStudentHistory && !hasTeacherHistory && memorialRows.length === 0;
 
   return (
     <div className="space-y-6">
@@ -124,6 +129,22 @@ export function PersonHistoryPage() {
             )}
           </section>
         </div>
+      ) : null}
+
+      {user.role === 'STUDENT' && studentProfileId ? (
+        <section className="rounded-lg border border-slate-200 bg-white p-5">
+          <h2 className="text-sm font-semibold text-slate-900">{t('memorials.historyTitle')}</h2>
+          <p className="mt-1 text-sm text-slate-500">{t('memorials.historyHint')}</p>
+          <div className="mt-4">
+            {memorials.isLoading ? (
+              <PageLoader label={t('memorials.loading')} compact />
+            ) : memorials.isError ? (
+              <p className="text-sm text-red-600">{t('memorials.loadError')}</p>
+            ) : (
+              <MemorialFeed memorials={memorialRows} emptyLabel={t('memorials.emptyForStudent')} />
+            )}
+          </div>
+        </section>
       ) : null}
 
       {user.role === 'TEACHER' ? (
