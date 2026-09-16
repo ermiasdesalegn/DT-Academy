@@ -40,4 +40,12 @@ export const env = {
     passkey: process.env.MPESA_PASSKEY ?? '',
     callbackUrl: process.env.MPESA_CALLBACK_URL ?? '',
   },
+  s3: {
+    endpoint: process.env.S3_ENDPOINT ?? '',
+    bucket: process.env.S3_BUCKET ?? '',
+    accessKeyId: process.env.S3_ACCESS_KEY_ID ?? '',
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY ?? '',
+    publicBaseUrl: process.env.S3_PUBLIC_BASE_URL ?? '',
+    region: process.env.S3_REGION ?? 'auto',
+  },
 };

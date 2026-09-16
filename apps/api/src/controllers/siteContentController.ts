@@ -14,6 +14,7 @@ import {
 } from '@dt-academy/types';
 import { ensureSiteContentTable } from '../lib/ensureSiteContent';
 import { prisma } from '../lib/prisma';
+import { handleUploadResponse } from '../lib/resolveUpload';
 
 const COPY_KEYS = [
   'schoolName',
@@ -153,10 +154,5 @@ export async function updateSiteContent(req: Request, res: Response): Promise<vo
 }
 
 export async function uploadSiteImage(req: Request, res: Response): Promise<void> {
-  const file = req.file;
-  if (!file) {
-    res.status(400).json({ message: 'Choose a JPEG, PNG, WebP, or GIF image under 8 MB.' });
-    return;
-  }
-  res.json({ url: `/api/uploads/${file.filename}` });
+  await handleUploadResponse(req, res, 'Choose a JPEG, PNG, WebP, or GIF image under 8 MB.');
 }
