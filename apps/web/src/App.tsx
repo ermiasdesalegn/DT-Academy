@@ -30,6 +30,7 @@ import { WebsiteContentPage } from './pages/WebsiteContentPage';
 import { TuitionOfficePage } from './pages/TuitionOfficePage';
 import { ClassesOfficePage } from './pages/ClassesOfficePage';
 import { PersonHistoryPage } from './pages/PersonHistoryPage';
+import { MemorialsPage } from './pages/MemorialsPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { ScreenLoader } from './components/ScreenLoader';
 import { useLocaleStore } from './store/localeStore';
@@ -91,6 +92,7 @@ export default function App() {
               <Route path="/admin/admissions" element={<AdmitStudentPage />} />
               <Route path="/admin/tuition" element={<TuitionOfficePage />} />
               <Route path="/admin/announcements" element={<AnnouncementsPage />} />
+              <Route path="/admin/memorials" element={<MemorialsPage />} />
             </Route>
           </Route>
         </Route>

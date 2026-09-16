@@ -5,6 +5,7 @@ import {
   CreditCard,
   FileText,
   GraduationCap,
+  Heart,
   LayoutDashboard,
   Users,
   UserPlus,
@@ -33,6 +34,7 @@ export const NAV: Record<UserRole, NavItem[]> = {
     { to: '/admin/tuition', labelKey: 'nav.tuition', icon: CreditCard },
     { to: '/admin/sheets', labelKey: 'nav.sheets', icon: ClipboardCheck },
     { to: '/admin/announcements', labelKey: 'nav.notices', icon: FileText },
+    { to: '/admin/memorials', labelKey: 'nav.memorials', icon: Heart },
   ],
   IT_ADMIN: [
     { to: '/admin', labelKey: 'nav.people', icon: Users, end: true },
@@ -41,12 +43,14 @@ export const NAV: Record<UserRole, NavItem[]> = {
     { to: '/admin/website', labelKey: 'nav.website', icon: Globe },
     { to: '/admin/tuition', labelKey: 'nav.tuition', icon: CreditCard },
     { to: '/admin/announcements', labelKey: 'nav.notices', icon: FileText },
+    { to: '/admin/memorials', labelKey: 'nav.memorials', icon: Heart },
   ],
   MANAGER: [
     { to: '/admin', labelKey: 'nav.people', icon: Users, end: true },
     { to: '/admin/admissions', labelKey: 'nav.admissions', icon: UserPlus },
     { to: '/admin/tuition', labelKey: 'nav.tuition', icon: CreditCard },
     { to: '/admin/announcements', labelKey: 'nav.notices', icon: FileText },
+    { to: '/admin/memorials', labelKey: 'nav.memorials', icon: Heart },
   ],
   TEACHER: [
     { to: '/admin/teaching', labelKey: 'nav.classes', icon: BookOpen, end: true },
@@ -67,15 +71,7 @@ export const STAFF_NAV_GROUPS: Partial<Record<UserRole, { titleKey: string; item
     { titleKey: 'staffGroup.dashboards', items: [NAV.DIRECTOR[0]] },
     {
       titleKey: 'staffGroup.office',
-      items: [
-        NAV.DIRECTOR[1],
-        NAV.DIRECTOR[2],
-        NAV.DIRECTOR[3],
-        NAV.DIRECTOR[4],
-        NAV.DIRECTOR[5],
-        NAV.DIRECTOR[6],
-        NAV.DIRECTOR[7],
-      ],
+      items: NAV.DIRECTOR.slice(1),
     },
   ],
   IT_ADMIN: [{ titleKey: 'staffGroup.office', items: NAV.IT_ADMIN }],
