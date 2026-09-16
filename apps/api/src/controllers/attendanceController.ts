@@ -34,6 +34,8 @@ export async function getAttendanceDay(req: Request, res: Response): Promise<voi
       gradeLevel: course.gradeLevel,
       section: course.section,
       academicYear: course.academicYear,
+      isFormer: false,
+      user: { leftAt: null },
     },
     include: { user: { select: { name: true } } },
     orderBy: { studentIdNumber: 'asc' },
@@ -79,10 +81,22 @@ export async function saveAttendanceDay(req: Request, res: Response): Promise<vo
     return;
   }
 
+  const roster = await prisma.studentProfile.findMany({
+    where: {
+      gradeLevel: course.gradeLevel,
+      section: course.section,
+      academicYear: course.academicYear,
+      isFormer: false,
+      user: { leftAt: null },
+    },
+    select: { id: true },
+  });
+  const onRoll = new Set(roster.map((s) => s.id));
+
   for (const row of rows) {
     const studentId = typeof row.studentId === 'string' ? row.studentId : '';
     const status = STATUSES.has(row.status) ? (row.status as AttendanceStatus) : null;
-    if (!studentId || !status) continue;
+    if (!studentId || !status || !onRoll.has(studentId)) continue;
     await prisma.attendance.upsert({
       where: { studentId_courseId_date: { studentId, courseId, date } },
       create: { studentId, courseId, date, status, recordedById: req.user.id },

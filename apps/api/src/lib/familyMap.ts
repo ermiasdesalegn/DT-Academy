@@ -119,7 +119,8 @@ export function mapFamilyChild(
 
 export function attendanceSince(): Date {
   const d = new Date();
-  d.setUTCDate(d.getUTCDate() - 21);
+  // Wider window so families still see recent subject rolls across holidays/breaks.
+  d.setUTCDate(d.getUTCDate() - 60);
   d.setUTCHours(0, 0, 0, 0);
   return d;
 }
