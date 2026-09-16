@@ -5,11 +5,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PageLoader } from '../components/layouts/PageLoader';
 import { useGradeSheet, useInquireSheet, useSaveGradeSheet, useSubmitGradeSheet } from '../hooks/useGrades';
+import { useT } from '../hooks/useT';
 import { gradeLabel } from '../lib/labels';
 
 const TERMS = [1, 2, 3];
 
 export function GradeSheetPage() {
+  const t = useT();
   const { courseId } = useParams();
   const [params, setParams] = useSearchParams();
   const term = Number(params.get('term') ?? '2') || 2;
@@ -36,29 +38,29 @@ export function GradeSheetPage() {
     <div className="space-y-6">
       <div>
         <Link to="/admin/teaching" className="text-sm text-teal-800 hover:underline">
-          Back to classes
+          {t('teaching.backClasses')}
         </Link>
         <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900">
-          {sheet ? `${sheet.courseName} · ${gradeLabel(sheet.gradeLevel)}${sheet.section}` : 'Grade sheet'}
+          {sheet ? `${sheet.courseName} · ${gradeLabel(sheet.gradeLevel)}${sheet.section}` : t('teaching.sheetFallback')}
         </h1>
-        <p className="mt-1 text-sm text-slate-500">
-          Test, quiz, and exam add up to the mark. Submit when the class is ready for the Director.
-        </p>
+        <p className="mt-1 text-sm text-slate-500">{t('teaching.sheetHint')}</p>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
-        {TERMS.map((t) => (
-          <Button key={t} type="button" size="sm" variant={t === term ? 'default' : 'outline'} onClick={() => setTerm(t)}>
-            Term {t}
+        {TERMS.map((n) => (
+          <Button key={n} type="button" size="sm" variant={n === term ? 'default' : 'outline'} onClick={() => setTerm(n)}>
+            {t('teaching.termN', { n })}
           </Button>
         ))}
         {sheet ? (
-          <span className="ml-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">{sheet.status.replaceAll('_', ' ')}</span>
+          <span className="ml-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700">
+            {sheet.status.replaceAll('_', ' ')}
+          </span>
         ) : null}
       </div>
 
-      {sheetQ.isLoading ? <PageLoader label="Loading grade sheet" /> : null}
-      {sheetQ.isError ? <p className="text-sm text-red-600">Could not open this sheet.</p> : null}
+      {sheetQ.isLoading ? <PageLoader label={t('teaching.sheetLoading')} /> : null}
+      {sheetQ.isError ? <p className="text-sm text-red-600">{t('teaching.sheetError')}</p> : null}
 
       {sheet ? (
         <>
@@ -66,13 +68,13 @@ export function GradeSheetPage() {
             <table className="w-full min-w-[720px] text-left text-sm">
               <thead className="bg-slate-50 text-slate-600">
                 <tr>
-                  <th className="px-3 py-2 font-medium">Student</th>
-                  <th className="px-3 py-2 font-medium">Test</th>
-                  <th className="px-3 py-2 font-medium">Quiz</th>
-                  <th className="px-3 py-2 font-medium">Exam</th>
-                  <th className="px-3 py-2 font-medium">Total</th>
-                  <th className="px-3 py-2 font-medium">Letter</th>
-                  <th className="px-3 py-2 font-medium">Remark</th>
+                  <th className="px-3 py-2 font-medium">{t('teaching.colStudent')}</th>
+                  <th className="px-3 py-2 font-medium">{t('teaching.colTest')}</th>
+                  <th className="px-3 py-2 font-medium">{t('teaching.colQuiz')}</th>
+                  <th className="px-3 py-2 font-medium">{t('teaching.colExam')}</th>
+                  <th className="px-3 py-2 font-medium">{t('teaching.colTotal')}</th>
+                  <th className="px-3 py-2 font-medium">{t('teaching.colLetter')}</th>
+                  <th className="px-3 py-2 font-medium">{t('teaching.colRemark')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -96,7 +98,8 @@ export function GradeSheetPage() {
                             const next = [...rows];
                             next[i] = { ...next[i], [field]: Number(e.target.value) };
                             setRows(next);
-                          }}
+                          }
+                          }
                         />
                       </td>
                     ))}
@@ -126,7 +129,7 @@ export function GradeSheetPage() {
               disabled={locked || !dirty || save.isPending}
               onClick={() => save.mutate({ id: sheet._id, rows })}
             >
-              {save.isPending ? 'Saving…' : 'Save draft'}
+              {save.isPending ? t('teaching.saving') : t('teaching.saveDraft')}
             </Button>
             <Button
               type="button"
@@ -134,22 +137,22 @@ export function GradeSheetPage() {
               disabled={sheet.status !== 'DRAFT' || submit.isPending}
               onClick={() => submit.mutate(sheet._id)}
             >
-              {submit.isPending ? 'Submitting…' : 'Submit to Director'}
+              {submit.isPending ? t('teaching.submitting') : t('teaching.submitDirector')}
             </Button>
           </div>
-          {save.isError ? <p className="text-sm text-red-600">Could not save. Stay on a draft sheet.</p> : null}
-          {submit.isError ? <p className="text-sm text-red-600">Could not submit.</p> : null}
+          {save.isError ? <p className="text-sm text-red-600">{t('teaching.saveSheetError')}</p> : null}
+          {submit.isError ? <p className="text-sm text-red-600">{t('teaching.submitError')}</p> : null}
 
           {sheet.status === 'APPROVED' ? (
             <div className="max-w-lg space-y-2 rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <p className="text-sm font-medium text-slate-800">Request unlock</p>
-              <p className="text-sm text-slate-500">The Director must open the sheet again before you can change marks.</p>
+              <p className="text-sm font-medium text-slate-800">{t('teaching.unlockTitle')}</p>
+              <p className="text-sm text-slate-500">{t('teaching.unlockHint')}</p>
               <textarea
                 className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm"
                 rows={3}
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                placeholder="Why do the marks need to change?"
+                placeholder={t('teaching.unlockPh')}
               />
               <Button
                 type="button"
@@ -157,13 +160,13 @@ export function GradeSheetPage() {
                 disabled={reason.trim().length < 8 || inquire.isPending}
                 onClick={() => inquire.mutate({ id: sheet._id, reason: reason.trim() })}
               >
-                Send inquiry
+                {t('teaching.sendInquiry')}
               </Button>
-              {inquire.isError ? <p className="text-sm text-red-600">Could not send the inquiry.</p> : null}
+              {inquire.isError ? <p className="text-sm text-red-600">{t('teaching.inquireError')}</p> : null}
             </div>
           ) : null}
           {sheet.openInquiry ? (
-            <p className="text-sm text-amber-800">Unlock request waiting: {sheet.openInquiry.reason}</p>
+            <p className="text-sm text-amber-800">{t('teaching.unlockWaiting', { reason: sheet.openInquiry.reason })}</p>
           ) : null}
         </>
       ) : null}

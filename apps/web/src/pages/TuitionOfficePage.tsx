@@ -9,10 +9,13 @@ import { useInsights } from '../hooks/useInsights';
 import { useUsers } from '../hooks/useUsers';
 import { useSetTuitionMonth, useStudentTuition } from '../hooks/usePayments';
 import { useAuthStore } from '../store/authStore';
+import { useT } from '../hooks/useT';
 
 export function TuitionOfficePage() {
+  const t = useT();
   const { n, dateTime, month } = useFormat();
-  const { data: users = [], isLoading } = useUsers('students');
+  const { data, isLoading } = useUsers({ group: 'students', take: 100 });
+  const users = data?.users ?? [];
   const insights = useInsights();
   const [studentId, setStudentId] = useState('');
   const [note, setNote] = useState('Paid in cash before the portal');
@@ -27,14 +30,12 @@ export function TuitionOfficePage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Tuition</h1>
-        <p className="mt-1 text-sm text-slate-500">
-          School-wide receipts, then mark a single student when cash was paid before the portal.
-        </p>
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">{t('tuitionOffice.title')}</h1>
+        <p className="mt-1 text-sm text-slate-500">{t('tuitionOffice.hint')}</p>
       </div>
 
       {insights.isLoading && !d ? (
-        <PageLoader label="Loading tuition" />
+        <PageLoader label={t('tuitionOffice.loadingTuition')} />
       ) : (
         <>
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -68,13 +69,13 @@ export function TuitionOfficePage() {
       </div>
 
       <label className="block max-w-lg text-sm">
-        <span className="font-medium text-slate-700">Student</span>
+        <span className="font-medium text-slate-700">{t('tuitionOffice.pickStudent')}</span>
         <select
           className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
           value={studentId}
           onChange={(e) => setStudentId(e.target.value)}
         >
-          <option value="">{isLoading ? 'Loading…' : 'Choose a student'}</option>
+          <option value="">{isLoading ? t('tuitionOffice.loadingStudents') : t('tuitionOffice.selectStudent')}</option>
           {users.map((u) =>
             u.studentProfile ? (
               <option key={u.studentProfile._id} value={u.studentProfile._id}>
@@ -91,7 +92,7 @@ export function TuitionOfficePage() {
             {tuition.data.studentName} · {tuition.data.studentIdNumber} · {tuition.data.academicYear}
           </p>
           <label className="block max-w-lg text-sm">
-            <span className="font-medium text-slate-700">Note (saved in the log)</span>
+            <span className="font-medium text-slate-700">{t('tuitionOffice.note')}</span>
             <input
               className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
               value={note}

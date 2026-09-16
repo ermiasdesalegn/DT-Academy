@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { PageLoader } from '../components/layouts/PageLoader';
 import { useAttendanceDay, useSaveAttendance } from '../hooks/useAttendance';
 import { useTeachingHome } from '../hooks/useClasses';
+import { useT } from '../hooks/useT';
 import { gradeLabel } from '../lib/labels';
 
 const STATUSES: AttendanceStatus[] = ['PRESENT', 'ABSENT', 'LATE', 'EXCUSED'];
@@ -14,6 +15,7 @@ function todayIso() {
 }
 
 export function AttendancePage() {
+  const t = useT();
   const { courseId: paramId } = useParams();
   const navigate = useNavigate();
   const teaching = useTeachingHome();
@@ -23,6 +25,13 @@ export function AttendancePage() {
   const day = useAttendanceDay(courseId, date);
   const save = useSaveAttendance();
   const [marks, setMarks] = useState<{ studentId: string; status: AttendanceStatus }[]>([]);
+
+  const statusLabel: Record<AttendanceStatus, string> = {
+    PRESENT: t('teaching.present'),
+    ABSENT: t('teaching.absent'),
+    LATE: t('teaching.late'),
+    EXCUSED: t('teaching.excused'),
+  };
 
   useEffect(() => {
     if (!day.data) return;
@@ -39,13 +48,13 @@ export function AttendancePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Attendance</h1>
-        <p className="mt-1 text-sm text-slate-500">Mark your subject roll for one day. Families see these statuses.</p>
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">{t('teaching.attendanceTitle')}</h1>
+        <p className="mt-1 text-sm text-slate-500">{t('teaching.attendanceHint')}</p>
       </div>
 
       <div className="flex flex-wrap gap-3">
         <label className="text-sm">
-          <span className="font-medium text-slate-700">Subject</span>
+          <span className="font-medium text-slate-700">{t('teaching.subject')}</span>
           <select
             className="mt-1 block rounded-md border border-slate-200 px-3 py-2 text-sm"
             value={courseId ?? ''}
@@ -60,7 +69,7 @@ export function AttendancePage() {
           </select>
         </label>
         <label className="text-sm">
-          <span className="font-medium text-slate-700">Date</span>
+          <span className="font-medium text-slate-700">{t('teaching.date')}</span>
           <input
             type="date"
             className="mt-1 block rounded-md border border-slate-200 px-3 py-2 text-sm"
@@ -71,21 +80,21 @@ export function AttendancePage() {
       </div>
 
       {!courseId ? (
-        <p className="text-sm text-slate-500">The office has not assigned you a subject yet.</p>
+        <p className="text-sm text-slate-500">{t('teaching.noCourse')}</p>
       ) : day.isLoading ? (
-        <PageLoader label="Loading attendance roll" />
+        <PageLoader label={t('teaching.attendanceLoading')} />
       ) : day.isError ? (
-        <p className="text-sm text-red-600">Could not load attendance.</p>
+        <p className="text-sm text-red-600">{t('teaching.attendanceError')}</p>
       ) : (
         <>
           <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
             <table className="w-full text-left text-sm">
               <thead className="bg-slate-50 text-slate-600">
                 <tr>
-                  <th className="px-3 py-2 font-medium">Student</th>
+                  <th className="px-3 py-2 font-medium">{t('teaching.colStudent')}</th>
                   {STATUSES.map((s) => (
                     <th key={s} className="px-3 py-2 font-medium">
-                      {s.charAt(0) + s.slice(1).toLowerCase()}
+                      {statusLabel[s]}
                     </th>
                   ))}
                 </tr>
@@ -121,15 +130,15 @@ export function AttendancePage() {
             disabled={!courseId || save.isPending}
             onClick={() => save.mutate({ courseId, date, marks })}
           >
-            {save.isPending ? 'Saving…' : 'Save roll'}
+            {save.isPending ? t('teaching.saving') : t('teaching.saveRoll')}
           </Button>
-          {save.isError ? <p className="text-sm text-red-600">Could not save the roll.</p> : null}
+          {save.isError ? <p className="text-sm text-red-600">{t('teaching.saveRollError')}</p> : null}
         </>
       )}
 
       <p className="text-sm text-slate-500">
         <Link to="/admin/teaching" className="text-teal-800 hover:underline">
-          Open class sheets
+          {t('teaching.openSheets')}
         </Link>
       </p>
     </div>

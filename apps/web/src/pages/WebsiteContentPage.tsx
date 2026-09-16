@@ -5,6 +5,7 @@ import { ChevronDown, ChevronUp, ImagePlus, Plus, Trash2, Undo2 } from 'lucide-r
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useSiteContent, useUpdateSiteContent, useUploadSiteImage } from '../hooks/useSiteContent';
+import { useT } from '../hooks/useT';
 import { LIBRARY_PHOTOS } from '../lib/schoolPhotos';
 
 function cloneSite(site: ISiteContent): ISiteContent {
@@ -78,6 +79,7 @@ function ImageField({
   onPickSrc: (src: string) => void;
   layout?: 'row' | 'tile';
 }) {
+  const t = useT();
   const inputId = useId();
   const inLibrary = LIBRARY_PHOTOS.some((p) => p.src === src);
 
@@ -119,9 +121,7 @@ function ImageField({
   );
 
   const uploadNote = (
-    <p className="text-[11px] leading-snug text-slate-500">
-      Uploads on the live free server disappear when it sleeps. Library photos stay in the project.
-    </p>
+    <p className="text-[11px] leading-snug text-slate-500">{t('websiteEditor.uploadNote')}</p>
   );
 
   if (layout === 'tile') {
@@ -136,7 +136,7 @@ function ImageField({
           {fileInput}
           <Button type="button" variant="outline" size="sm" className="w-full" disabled={uploading} onClick={() => document.getElementById(inputId)?.click()}>
             <ImagePlus />
-            {uploading ? 'Uploading…' : 'Upload (temporary on live)'}
+            {uploading ? t('websiteEditor.uploading') : t('websiteEditor.uploadMedia')}
           </Button>
           {uploadNote}
           <p className="break-all text-[11px] leading-snug text-slate-400" title={src}>
@@ -157,7 +157,7 @@ function ImageField({
           {fileInput}
           <Button type="button" variant="outline" size="sm" disabled={uploading} onClick={() => document.getElementById(inputId)?.click()}>
             <ImagePlus />
-            {uploading ? 'Uploading…' : 'Upload (temporary on live)'}
+            {uploading ? t('websiteEditor.uploading') : t('websiteEditor.uploadMedia')}
           </Button>
           {uploadNote}
           <p className="break-all text-xs text-slate-400" title={src}>
@@ -170,6 +170,7 @@ function ImageField({
 }
 
 export function WebsiteContentPage() {
+  const t = useT();
   const { data } = useSiteContent();
   const save = useUpdateSiteContent();
   const upload = useUploadSiteImage();
@@ -306,7 +307,7 @@ export function WebsiteContentPage() {
   const actions = (
     <div className="flex flex-wrap items-center gap-3">
       <Button type="submit" disabled={save.isPending || Boolean(busyKey) || !dirty}>
-        {save.isPending ? 'Saving…' : 'Save website'}
+        {save.isPending ? t('websiteEditor.saving') : t('websiteEditor.save')}
       </Button>
       <Button type="button" variant="outline" disabled={!dirty || save.isPending || Boolean(busyKey)} onClick={undoChanges}>
         <Undo2 />
@@ -318,10 +319,9 @@ export function WebsiteContentPage() {
 
   return (
     <div className="mx-auto max-w-5xl pb-16">
-      <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Public website</h1>
+      <h1 className="text-2xl font-semibold tracking-tight text-slate-900">{t('websiteEditor.title')}</h1>
       <p className="mt-1 text-sm text-slate-500">
-        Change copy, photos, numbers, and blog notices. Edit English and Amharic separately. Photos are shared.
-        Prefer a library photo so it stays online. Uploads on the live free server disappear when it sleeps.{' '}
+        {t('websiteEditor.hint')} {t('websiteEditor.preferLibrary')}{' '}
         <Link to="/" className="text-teal-800 underline" target="_blank" rel="noreferrer">
           View the site
         </Link>
@@ -765,7 +765,7 @@ export function WebsiteContentPage() {
           <p className="text-sm text-red-600">Could not save. Sign in as Director or IT Admin.</p>
         ) : null}
         {upload.isError ? (
-          <p className="text-sm text-red-600">Photo did not upload. Use JPEG, PNG, or WebP under 8 MB, then save.</p>
+          <p className="text-sm text-red-600">{t('websiteEditor.uploadFailed')}</p>
         ) : null}
         {saved ? <p className="text-sm text-teal-800">Saved. Open the public site to see the change.</p> : null}
         {actions}

@@ -2,6 +2,7 @@ import axios from 'axios';
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { PageHeader, Card } from '../components/layouts/Page';
+import { useT } from '../hooks/useT';
 import { api } from '../services/api';
 
 type AdmitResult = {
@@ -32,6 +33,7 @@ const emptyForm = {
 };
 
 export function AdmitStudentPage() {
+  const t = useT();
   const [form, setForm] = useState(emptyForm);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -65,7 +67,7 @@ export function AdmitStudentPage() {
       } else if (axios.isAxiosError(err) && typeof err.response?.data?.message === 'string') {
         setError(err.response.data.message);
       } else {
-        setError('Could not save this admission. Check the form and try again.');
+        setError(t('admitOffice.error'));
       }
     } finally {
       setBusy(false);
@@ -75,36 +77,39 @@ export function AdmitStudentPage() {
   if (result) {
     return (
       <>
-        <PageHeader
-          title="Admission saved"
-          subtitle="Share the school ID with the office file. Tuition still has to be verified before the student is active."
-        />
+        <PageHeader title={t('admitOffice.success')} subtitle={t('admitOffice.hint')} />
         <Card>
           <dl className="grid gap-4 sm:grid-cols-2">
-            <Info label="Student" value={result.student.name} />
-            <Info label="School ID" value={result.studentProfile.studentIdNumber} />
+            <Info label={t('admitOffice.studentName')} value={result.student.name} />
             <Info
-              label="Class"
-              value={`${gradeLabel(result.studentProfile.gradeLevel)} · Section ${result.studentProfile.section} · ${result.studentProfile.academicYear}`}
+              label="School ID"
+              value={result.studentProfile.studentIdNumber}
             />
-            <Info label="Parent" value={result.parent.name} />
             <Info
-              label="Parent account"
+              label={t('admitOffice.grade')}
+              value={t('admitOffice.classLine', {
+                grade: gradeLabel(result.studentProfile.gradeLevel),
+                section: result.studentProfile.section,
+                year: result.studentProfile.academicYear,
+              })}
+            />
+            <Info label={t('admitOffice.parentName')} value={result.parent.name} />
+            <Info
+              label={t('admitOffice.parentPw', { password: result.parentTemporaryPassword ?? '—' })}
               value={
                 result.parentCreated
-                  ? `Created. Temporary password: ${result.parentTemporaryPassword}`
-                  : 'Reused existing parent login (same phone or email).'
+                  ? result.parentTemporaryPassword ?? '—'
+                  : 'Reused existing parent login'
               }
             />
             <Info
-              label="Student login"
+              label={t('admitOffice.studentPw', { password: result.studentTemporaryPassword ?? '—' })}
               value={
                 result.studentLoginEnabled
-                  ? `Enabled. Temporary password: ${result.studentTemporaryPassword}`
-                  : 'Skipped (KG–G4 use the parent portal only).'
+                  ? result.studentTemporaryPassword ?? '—'
+                  : 'Skipped'
               }
             />
-            <Info label="Portal access" value="Locked until tuition is verified" />
           </dl>
           <div className="mt-8 flex flex-wrap gap-3">
             <button
@@ -115,7 +120,7 @@ export function AdmitStudentPage() {
                 setForm(emptyForm);
               }}
             >
-              Admit another student
+              {t('admitOffice.admitAnother')}
             </button>
             <Link
               to="/admin"
@@ -131,37 +136,34 @@ export function AdmitStudentPage() {
 
   return (
     <>
-      <PageHeader
-        title="Admit student"
-        subtitle="One parent login can cover several children. KG–G4: parent portal only."
-      />
+      <PageHeader title={t('admitOffice.title')} subtitle={t('admitOffice.hint')} />
       <Card>
         <form className="grid gap-5 sm:grid-cols-2" onSubmit={onSubmit}>
           <fieldset className="sm:col-span-2">
-            <legend className="text-sm font-medium text-slate-900">Student</legend>
+            <legend className="text-sm font-medium text-slate-900">{t('admitOffice.studentName')}</legend>
             <div className="mt-3 grid gap-4 sm:grid-cols-2">
               <Field
-                label="Full name"
+                label={t('admitOffice.studentName')}
                 value={form.studentName}
                 onChange={(v) => set('studentName', v)}
                 required
               />
               <Field
-                label="Grade"
+                label={t('admitOffice.grade')}
                 placeholder="KG / 1–8 / Prep"
                 value={form.grade}
                 onChange={(v) => set('grade', v)}
                 required
               />
               <Field
-                label="Section"
+                label={t('admitOffice.section')}
                 placeholder="A"
                 value={form.section}
                 onChange={(v) => set('section', v)}
                 required
               />
               <Field
-                label="Academic year"
+                label={t('admitOffice.year')}
                 placeholder="2026-27"
                 value={form.academicYear}
                 onChange={(v) => set('academicYear', v)}
@@ -170,23 +172,23 @@ export function AdmitStudentPage() {
             </div>
           </fieldset>
           <fieldset className="sm:col-span-2">
-            <legend className="text-sm font-medium text-slate-900">Parent / guardian</legend>
+            <legend className="text-sm font-medium text-slate-900">{t('admitOffice.parentName')}</legend>
             <div className="mt-3 grid gap-4 sm:grid-cols-2">
               <Field
-                label="Full name"
+                label={t('admitOffice.parentName')}
                 value={form.parentName}
                 onChange={(v) => set('parentName', v)}
                 required
               />
               <Field
-                label="Phone"
+                label={t('admitOffice.parentPhone')}
                 placeholder="Required"
                 value={form.parentPhone}
                 onChange={(v) => set('parentPhone', v)}
                 required
               />
               <Field
-                label="Email"
+                label={t('admitOffice.parentEmail')}
                 placeholder="Optional"
                 value={form.parentEmail}
                 onChange={(v) => set('parentEmail', v)}
@@ -210,7 +212,7 @@ export function AdmitStudentPage() {
               disabled={busy}
               className="btn-press rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:opacity-60"
             >
-              {busy ? 'Saving…' : 'Save admission'}
+              {busy ? t('admitOffice.loading') : t('admitOffice.submit')}
             </button>
             <p className="mt-3 text-xs text-slate-500">
               Saving will create or reuse the parent, mint a student ID, and skip student login for
