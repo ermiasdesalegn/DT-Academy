@@ -84,14 +84,38 @@ export async function listUsers(req: Request, res: Response): Promise<void> {
     if (!role && group !== 'staff' && group !== 'parents') where.role = 'STUDENT';
   }
 
-  const users = await prisma.user.findMany({
-    where,
-    orderBy: { createdAt: 'desc' },
-    include: { studentProfile: true },
-  });
+  const q = typeof req.query.q === 'string' ? req.query.q.trim() : '';
+  if (q) {
+    where.AND = [
+      ...(Array.isArray(where.AND) ? where.AND : where.AND ? [where.AND] : []),
+      {
+        OR: [
+          { name: { contains: q, mode: 'insensitive' } },
+          { email: { contains: q, mode: 'insensitive' } },
+          { studentProfile: { studentIdNumber: { contains: q, mode: 'insensitive' } } },
+        ],
+      },
+    ];
+  }
+
+  const takeRaw = typeof req.query.take === 'string' ? Number(req.query.take) : 50;
+  const skipRaw = typeof req.query.skip === 'string' ? Number(req.query.skip) : 0;
+  const take = Number.isFinite(takeRaw) ? Math.min(100, Math.max(1, Math.trunc(takeRaw))) : 50;
+  const skip = Number.isFinite(skipRaw) ? Math.max(0, Math.trunc(skipRaw)) : 0;
+
+  const [total, users] = await Promise.all([
+    prisma.user.count({ where }),
+    prisma.user.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      take,
+      skip,
+      include: { studentProfile: true },
+    }),
+  ]);
 
   const listed: IListedUser[] = users.map((user) => toListedUser(user));
-  res.json({ users: listed });
+  res.json({ users: listed, total });
 }
 
 export async function setUserPassword(req: Request, res: Response): Promise<void> {

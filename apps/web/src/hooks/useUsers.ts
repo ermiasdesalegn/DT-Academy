@@ -4,13 +4,37 @@ import { api } from '../services/api';
 
 export type PeopleGroup = 'all' | 'students' | 'parents' | 'staff' | 'former-students' | 'former-teachers';
 
-export function useUsers(group?: PeopleGroup) {
+export type UseUsersOptions = {
+  group?: PeopleGroup;
+  q?: string;
+  take?: number;
+  skip?: number;
+  enabled?: boolean;
+};
+
+export function useUsers(groupOrOpts?: PeopleGroup | UseUsersOptions) {
+  const opts: UseUsersOptions =
+    typeof groupOrOpts === 'string' || groupOrOpts === undefined
+      ? { group: groupOrOpts }
+      : groupOrOpts;
+  const group = opts.group ?? 'all';
+  const q = opts.q?.trim() ?? '';
+  const take = opts.take ?? 50;
+  const skip = opts.skip ?? 0;
+
   return useQuery({
-    queryKey: ['users', group ?? 'all'],
+    queryKey: ['users', group, q, take, skip],
+    enabled: opts.enabled !== false,
     queryFn: async () => {
-      const params = group && group !== 'all' ? { group } : undefined;
-      const { data } = await api.get<{ users: IListedUser[] }>('/users', { params });
-      return data.users;
+      const { data } = await api.get<{ users: IListedUser[]; total: number }>('/users', {
+        params: {
+          ...(group !== 'all' ? { group } : {}),
+          ...(q ? { q } : {}),
+          take,
+          skip,
+        },
+      });
+      return { users: data.users, total: data.total ?? data.users.length };
     },
   });
 }

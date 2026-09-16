@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useCreatePayment } from '../hooks/usePayments';
 import { PageLoader } from '../components/layouts/PageLoader';
@@ -26,7 +27,11 @@ const STAFF_ROLES: UserRole[] = ['DIRECTOR', 'IT_ADMIN', 'MANAGER', 'TEACHER'];
 export function AdminDashboard() {
   const t = useT();
   const [group, setGroup] = useState<PeopleGroup>('all');
-  const { data: users = [], isLoading, error } = useUsers(group);
+  const [search, setSearch] = useState('');
+  const [q, setQ] = useState('');
+  const { data, isLoading, error } = useUsers({ group, q, take: 50 });
+  const users = data?.users ?? [];
+  const total = data?.total ?? 0;
   const markFormer = useMarkFormer();
   const restore = useRestoreUser();
   const [staffOpen, setStaffOpen] = useState(false);
@@ -93,6 +98,39 @@ export function AdminDashboard() {
           <TabsTrigger value="former-teachers">{t('office.tabFormerTeachers')}</TabsTrigger>
         </TabsList>
       </Tabs>
+
+      <form
+        className="mt-4 flex flex-wrap gap-2"
+        onSubmit={(e) => {
+          e.preventDefault();
+          setQ(search.trim());
+        }}
+      >
+        <Input
+          className="max-w-sm"
+          placeholder={t('office.peopleSearch')}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <Button type="submit" variant="outline">
+          {t('common.search')}
+        </Button>
+        {q ? (
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => {
+              setSearch('');
+              setQ('');
+            }}
+          >
+            {t('common.clear')}
+          </Button>
+        ) : null}
+      </form>
+      {!isLoading && users.length > 0 && total > users.length ? (
+        <p className="mt-2 text-xs text-slate-500">{t('office.peopleShowing', { shown: users.length, total })}</p>
+      ) : null}
 
       {actionError ? <p className="mt-3 text-sm text-red-600">{actionError}</p> : null}
 
