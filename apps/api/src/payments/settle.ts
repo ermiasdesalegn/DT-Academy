@@ -27,6 +27,8 @@ export async function markPaymentVerified(
         providerRef: opts?.providerRef ?? payment.providerRef,
       },
     });
+    // Tuition academic lock is paused for now — keep marking active on verify for consistency.
+    // When gating returns, admit with isActive:false and rely on this unlock again.
     await tx.studentProfile.update({
       where: { id: payment.studentId },
       data: { isActive: true },
