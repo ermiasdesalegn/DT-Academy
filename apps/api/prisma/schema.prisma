@@ -83,6 +83,7 @@ model User {
   resolvedInquiries  Inquiry[]        @relation("InquiryResolver")
   announcements      Announcement[]
   homerooms          Homeroom[]
+  memorialsAuthored  SchoolMemorial[] @relation("MemorialAuthor")
 }
 
 model StudentProfile {
@@ -102,6 +103,7 @@ model StudentProfile {
   payments   Payment[]
   attendance Attendance[]
   statusLogs PaymentStatusLog[]
+  memorials  SchoolMemorialStudent[]
 }
 
 model Course {
@@ -266,4 +268,43 @@ model SiteContent {
   blogJson     String   @default("{}") @db.Text
   blogJsonAm   String   @default("{}") @db.Text
   updatedAt    DateTime @updatedAt
+}
+
+enum MemorialKind {
+  NOTE
+  BLOG
+  PHOTO
+  VIDEO
+}
+
+enum MemorialScope {
+  STUDENTS
+  BATCH
+}
+
+model SchoolMemorial {
+  id           String        @id @default(cuid())
+  kind         MemorialKind
+  scope        MemorialScope
+  title        String
+  note         String        @db.Text
+  mediaUrl     String?
+  gradeLevel   Int?
+  academicYear String?
+  section      String?
+  authorId     String
+  author       User          @relation("MemorialAuthor", fields: [authorId], references: [id])
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  students SchoolMemorialStudent[]
+}
+
+model SchoolMemorialStudent {
+  memorialId String
+  memorial   SchoolMemorial @relation(fields: [memorialId], references: [id], onDelete: Cascade)
+  studentId  String
+  student    StudentProfile @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  @@id([memorialId, studentId])
 }

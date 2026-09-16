@@ -34,6 +34,8 @@ export type PaymentMethod = 'CASH' | 'BANK_TRANSFER' | 'TELEBIRR' | 'MPESA';
 export type PaymentStatus = 'PENDING' | 'VERIFIED' | 'REJECTED';
 
 export type AttendanceStatus = 'PRESENT' | 'ABSENT' | 'LATE' | 'EXCUSED';
+export type MemorialKind = 'NOTE' | 'BLOG' | 'PHOTO' | 'VIDEO';
+export type MemorialScope = 'STUDENTS' | 'BATCH';
 
 export type InquiryStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 
@@ -245,6 +247,39 @@ export interface IPersonHistory {
   coursesTaught: IPersonHistoryCourse[];
   sheets: IPersonHistorySheet[];
   attendanceRecordedCount: number;
+}
+
+export interface ISchoolMemorialStudent {
+  studentId: string;
+  studentName: string;
+  studentIdNumber: string;
+}
+
+export interface ISchoolMemorial {
+  _id: string;
+  kind: MemorialKind;
+  scope: MemorialScope;
+  title: string;
+  note: string;
+  mediaUrl?: string;
+  gradeLevel?: number;
+  academicYear?: string;
+  section?: string;
+  authorName: string;
+  createdAt: string;
+  students: ISchoolMemorialStudent[];
+}
+
+export interface ICreateSchoolMemorialRequest {
+  kind: MemorialKind;
+  scope: MemorialScope;
+  title: string;
+  note: string;
+  mediaUrl?: string;
+  gradeLevel?: number | '';
+  academicYear?: string;
+  section?: string;
+  studentIds?: string[];
 }
 
 export interface IFamilyChild {
