@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import {
+  applyClassCourseTemplate,
   getClassOverall,
   getTeachingHome,
   listClassCourses,
@@ -35,6 +36,12 @@ classesRouter.put(
   authMiddleware,
   requireRole(['DIRECTOR', 'IT_ADMIN']),
   asyncHandler(upsertClassCourse)
+);
+classesRouter.post(
+  '/courses/apply-template',
+  authMiddleware,
+  requireRole(['DIRECTOR', 'IT_ADMIN']),
+  asyncHandler(applyClassCourseTemplate)
 );
 classesRouter.get(
   '/overall',

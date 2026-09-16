@@ -80,6 +80,29 @@ export function useUpsertClassCourse() {
   });
 }
 
+export function useApplyClassCourseTemplate() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: {
+      gradeLevel: number;
+      section: string;
+      academicYear: string;
+    }) => {
+      const { data } = await api.post<{
+        ok: true;
+        sourceCount: number;
+        targetClasses: number;
+        upserted: number;
+      }>('/classes/courses/apply-template', body);
+      return data;
+    },
+    onSuccess: async () => {
+      await client.invalidateQueries({ queryKey: ['class-courses'] });
+      await client.invalidateQueries({ queryKey: ['teaching-me'] });
+    },
+  });
+}
+
 export function useSetHomeroom() {
   const client = useQueryClient();
   return useMutation({

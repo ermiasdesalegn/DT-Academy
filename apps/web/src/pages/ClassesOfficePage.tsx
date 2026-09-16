@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { PageLoader } from '../components/layouts/PageLoader';
 import {
+  useApplyClassCourseTemplate,
   useClassCourses,
   useClassOverall,
   useClasses,
@@ -35,6 +36,7 @@ export function ClassesOfficePage() {
   const teachers = useUsers({ group: 'staff', take: 100 });
   const setHome = useSetHomeroom();
   const upsert = useUpsertClassCourse();
+  const applyTemplate = useApplyClassCourseTemplate();
   const teacherList = (teachers.data?.users ?? []).filter((u) => u.role === 'TEACHER' && !u.leftAt);
   const list = classes.data ?? [];
   const [picked, setPicked] = useState<IClassGroup | null>(null);
@@ -161,14 +163,39 @@ export function ClassesOfficePage() {
                       {t('classes.subjectsHint', { year: current.academicYear })}
                     </p>
                   </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setDrafts((rows) => [...rows, { name: '', code: '', teacherId: '' }])}
-                  >
-                    {t('classes.addSubject')}
-                  </Button>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={
+                        applyTemplate.isPending ||
+                        (courses.data?.length ?? 0) === 0 ||
+                        current.gradeLevel > 8
+                      }
+                      onClick={() => {
+                        void applyTemplate
+                          .mutateAsync({
+                            gradeLevel: current.gradeLevel,
+                            section: current.section,
+                            academicYear: current.academicYear,
+                          })
+                          .catch(() => undefined);
+                      }}
+                    >
+                      {applyTemplate.isPending
+                        ? t('classes.applyingTemplate')
+                        : t('classes.applyTemplate')}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setDrafts((rows) => [...rows, { name: '', code: '', teacherId: '' }])}
+                    >
+                      {t('classes.addSubject')}
+                    </Button>
+                  </div>
                 </div>
 
                 {courses.isLoading ? (
@@ -253,6 +280,17 @@ export function ClassesOfficePage() {
                 )}
                 {upsert.isError ? (
                   <p className="mt-3 text-sm text-red-600">{t('classes.saveSubjectError')}</p>
+                ) : null}
+                {applyTemplate.isError ? (
+                  <p className="mt-3 text-sm text-red-600">{t('classes.applyTemplateError')}</p>
+                ) : null}
+                {applyTemplate.isSuccess ? (
+                  <p className="mt-3 text-sm text-emerald-700">
+                    {t('classes.applyTemplateDone', {
+                      classes: applyTemplate.data.targetClasses,
+                      subjects: applyTemplate.data.sourceCount,
+                    })}
+                  </p>
                 ) : null}
               </div>
 

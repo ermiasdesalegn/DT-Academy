@@ -195,6 +195,72 @@ export async function upsertClassCourse(req: Request, res: Response): Promise<vo
   res.json({ course: mapCourse(row) });
 }
 
+/** Copy subjects + teachers from one class onto every other KG–8 class in the same year. */
+export async function applyClassCourseTemplate(req: Request, res: Response): Promise<void> {
+  const gradeLevel = Math.trunc(Number(req.body?.gradeLevel));
+  const section = typeof req.body?.section === 'string' ? req.body.section.trim() : '';
+  const academicYear = typeof req.body?.academicYear === 'string' ? req.body.academicYear.trim() : '';
+
+  if (!section || !academicYear || !Number.isFinite(gradeLevel) || gradeLevel < 0 || gradeLevel > 8) {
+    res.status(400).json({ message: 'Source gradeLevel (KG–8), section, and academicYear are required' });
+    return;
+  }
+
+  const source = await prisma.course.findMany({
+    where: { gradeLevel, section, academicYear },
+  });
+  if (source.length === 0) {
+    res.status(400).json({ message: 'Save subjects on this class first, then apply them to the others.' });
+    return;
+  }
+
+  const students = await prisma.studentProfile.findMany({
+    where: { academicYear, gradeLevel: { gte: 0, lte: 8 }, isFormer: false },
+    select: { gradeLevel: true, section: true },
+    distinct: ['gradeLevel', 'section'],
+  });
+
+  const targets = students.filter(
+    (c) => !(c.gradeLevel === gradeLevel && c.section === section)
+  );
+
+  let upserted = 0;
+  for (const target of targets) {
+    for (const course of source) {
+      await prisma.course.upsert({
+        where: {
+          code_academicYear_gradeLevel_section: {
+            code: course.code,
+            academicYear,
+            gradeLevel: target.gradeLevel,
+            section: target.section,
+          },
+        },
+        create: {
+          name: course.name,
+          code: course.code,
+          gradeLevel: target.gradeLevel,
+          section: target.section,
+          academicYear,
+          teacherId: course.teacherId,
+        },
+        update: {
+          name: course.name,
+          teacherId: course.teacherId,
+        },
+      });
+      upserted += 1;
+    }
+  }
+
+  res.json({
+    ok: true,
+    sourceCount: source.length,
+    targetClasses: targets.length,
+    upserted,
+  });
+}
+
 export async function getTeachingHome(req: Request, res: Response): Promise<void> {
   if (!req.user) {
     res.status(401).json({ message: 'Authentication required' });
