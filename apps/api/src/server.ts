@@ -17,12 +17,14 @@ import { attendanceRouter } from './routes/attendance';
 import { announcementsRouter } from './routes/announcements';
 import { memorialsRouter } from './routes/memorials';
 import { contactRouter } from './routes/contact';
+import { joinRequestsRouter } from './routes/joinRequests';
 import { seedDirector } from './seed/seedDirector';
 import {
   ensurePaymentMonthColumn,
   ensureSiteContentTable,
   ensureFormerPeopleColumns,
   ensureSchoolMemorialsTables,
+  ensureJoinRequestsTable,
 } from './lib/ensureSiteContent';
 import { ensureUploadDir, UPLOAD_DIR } from './lib/uploads';
 import { isRetryable } from './lib/prisma';
@@ -50,6 +52,7 @@ app.use('/api/announcements', announcementsRouter);
 app.use('/api/memorials', memorialsRouter);
 app.use('/api/site-content', siteContentRouter);
 app.use('/api/contact', contactRouter);
+app.use('/api/join-requests', joinRequestsRouter);
 app.use('/api/uploads', express.static(UPLOAD_DIR));
 
 app.use('/api', (_req, res) => {
@@ -91,6 +94,7 @@ async function start(): Promise<void> {
     await ensurePaymentMonthColumn().catch((err: unknown) => console.warn('Payment month column skipped', err));
     await ensureFormerPeopleColumns().catch((err: unknown) => console.warn('Former people columns skipped', err));
     await ensureSchoolMemorialsTables().catch((err: unknown) => console.warn('School memorials tables skipped', err));
+    await ensureJoinRequestsTable().catch((err: unknown) => console.warn('Join requests table skipped', err));
   } else {
     console.warn('API is up, but Postgres is still unreachable. Login will retry when Neon wakes.');
   }

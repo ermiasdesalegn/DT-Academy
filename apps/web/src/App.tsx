@@ -26,6 +26,7 @@ import { FamilyDashboard } from './pages/FamilyDashboard';
 import { PayTuitionPage } from './pages/PayTuitionPage';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { AdmitStudentPage } from './pages/AdmitStudentPage';
+import { JoinRequestsPage } from './pages/JoinRequestsPage';
 import { WebsiteContentPage } from './pages/WebsiteContentPage';
 import { TuitionOfficePage } from './pages/TuitionOfficePage';
 import { ClassesOfficePage } from './pages/ClassesOfficePage';
@@ -90,6 +91,7 @@ export default function App() {
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/people/:id/history" element={<PersonHistoryPage />} />
               <Route path="/admin/admissions" element={<AdmitStudentPage />} />
+              <Route path="/admin/join-requests" element={<JoinRequestsPage />} />
               <Route path="/admin/tuition" element={<TuitionOfficePage />} />
               <Route path="/admin/announcements" element={<AnnouncementsPage />} />
             </Route>

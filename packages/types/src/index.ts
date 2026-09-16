@@ -36,6 +36,7 @@ export type PaymentStatus = 'PENDING' | 'VERIFIED' | 'REJECTED';
 export type AttendanceStatus = 'PRESENT' | 'ABSENT' | 'LATE' | 'EXCUSED';
 export type MemorialKind = 'NOTE' | 'BLOG' | 'PHOTO' | 'VIDEO';
 export type MemorialScope = 'STUDENTS' | 'BATCH';
+export type JoinRequestStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 
 export type InquiryStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 
@@ -84,6 +85,42 @@ export interface IUpsertClassCourseRequest {
   section: string;
   academicYear: string;
   teacherId: string;
+}
+
+export interface IApplyClassCourseTemplateRequest {
+  gradeLevel: number;
+  section: string;
+  academicYear: string;
+}
+
+export interface IJoinRequest {
+  _id: string;
+  studentName: string;
+  parentName: string;
+  parentPhone: string;
+  parentEmail?: string;
+  gradeLevel: number;
+  section?: string;
+  academicYear?: string;
+  note: string;
+  status: JoinRequestStatus;
+  reviewedAt?: string;
+  reviewedById?: string;
+  reviewedByName?: string;
+  rejectReason?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ISubmitJoinRequest {
+  studentName: string;
+  parentName: string;
+  parentPhone: string;
+  parentEmail?: string;
+  gradeLevel: number;
+  section?: string;
+  academicYear?: string;
+  note: string;
 }
 
 export interface IGradeSheet {

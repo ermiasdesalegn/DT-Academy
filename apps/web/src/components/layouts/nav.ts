@@ -30,6 +30,7 @@ export const NAV: Record<UserRole, NavItem[]> = {
     { to: '/admin/classes', labelKey: 'nav.classes', icon: GraduationCap },
     { to: '/admin', labelKey: 'nav.people', icon: Users, end: true },
     { to: '/admin/admissions', labelKey: 'nav.admissions', icon: UserPlus },
+    { to: '/admin/join-requests', labelKey: 'nav.joinRequests', icon: ClipboardCheck },
     { to: '/admin/website', labelKey: 'nav.website', icon: Globe },
     { to: '/admin/tuition', labelKey: 'nav.tuition', icon: CreditCard },
     { to: '/admin/sheets', labelKey: 'nav.sheets', icon: ClipboardCheck },
@@ -40,6 +41,7 @@ export const NAV: Record<UserRole, NavItem[]> = {
     { to: '/admin', labelKey: 'nav.people', icon: Users, end: true },
     { to: '/admin/classes', labelKey: 'nav.classes', icon: GraduationCap },
     { to: '/admin/admissions', labelKey: 'nav.admissions', icon: UserPlus },
+    { to: '/admin/join-requests', labelKey: 'nav.joinRequests', icon: ClipboardCheck },
     { to: '/admin/website', labelKey: 'nav.website', icon: Globe },
     { to: '/admin/tuition', labelKey: 'nav.tuition', icon: CreditCard },
     { to: '/admin/announcements', labelKey: 'nav.notices', icon: FileText },
@@ -48,6 +50,7 @@ export const NAV: Record<UserRole, NavItem[]> = {
   MANAGER: [
     { to: '/admin', labelKey: 'nav.people', icon: Users, end: true },
     { to: '/admin/admissions', labelKey: 'nav.admissions', icon: UserPlus },
+    { to: '/admin/join-requests', labelKey: 'nav.joinRequests', icon: ClipboardCheck },
     { to: '/admin/tuition', labelKey: 'nav.tuition', icon: CreditCard },
     { to: '/admin/announcements', labelKey: 'nav.notices', icon: FileText },
     { to: '/admin/memorials', labelKey: 'nav.memorials', icon: Heart },

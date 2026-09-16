@@ -137,6 +137,11 @@ export function AdmitStudentPage() {
   return (
     <>
       <PageHeader title={t('admitOffice.title')} subtitle={t('admitOffice.hint')} />
+      <p className="mb-4 text-sm text-slate-500">
+        <Link to="/admin/join-requests" className="text-teal-800 hover:underline">
+          {t('nav.joinRequests')}
+        </Link>
+      </p>
       <Card>
         <form className="grid gap-5 sm:grid-cols-2" onSubmit={onSubmit}>
           <fieldset className="sm:col-span-2">
