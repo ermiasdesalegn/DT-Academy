@@ -2,6 +2,7 @@ import type { Request, Response } from 'express';
 import type { MemorialKind, MemorialScope, ISchoolMemorial } from '@dt-academy/types';
 import type { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma';
+import { handleUploadResponse } from '../lib/resolveUpload';
 
 const KINDS = new Set<MemorialKind>(['NOTE', 'BLOG', 'PHOTO', 'VIDEO']);
 const SCOPES = new Set<MemorialScope>(['STUDENTS', 'BATCH']);
@@ -66,12 +67,7 @@ function batchMatch(
 }
 
 export async function uploadMemorialMedia(req: Request, res: Response): Promise<void> {
-  const file = req.file;
-  if (!file) {
-    res.status(400).json({ message: 'Choose a photo or video file.' });
-    return;
-  }
-  res.status(201).json({ url: `/api/uploads/${file.filename}` });
+  await handleUploadResponse(req, res, 'Choose a photo or video file.', 201);
 }
 
 export async function listMemorials(req: Request, res: Response): Promise<void> {
@@ -245,6 +241,85 @@ export async function createMemorial(req: Request, res: Response): Promise<void>
   });
 
   res.status(201).json({ memorial: mapMemorial(row) });
+}
+
+export async function updateMemorial(req: Request, res: Response): Promise<void> {
+  if (!req.user) {
+    res.status(401).json({ message: 'Authentication required' });
+    return;
+  }
+  const id = req.params.id;
+  if (!id) {
+    res.status(400).json({ message: 'Memorial id is required' });
+    return;
+  }
+  const existing = await prisma.schoolMemorial.findUnique({ where: { id } });
+  if (!existing) {
+    res.status(404).json({ message: 'Memorial not found' });
+    return;
+  }
+
+  const kind = req.body?.kind as MemorialKind;
+  const scope = req.body?.scope as MemorialScope;
+  const title = typeof req.body?.title === 'string' ? req.body.title.trim() : '';
+  const note = typeof req.body?.note === 'string' ? req.body.note.trim() : '';
+  const mediaUrl = typeof req.body?.mediaUrl === 'string' ? req.body.mediaUrl.trim() : undefined;
+  const academicYear = typeof req.body?.academicYear === 'string' ? req.body.academicYear.trim() : undefined;
+  const section = typeof req.body?.section === 'string' ? req.body.section.trim() : undefined;
+  const gradeRaw = req.body?.gradeLevel;
+  const gradeLevel = gradeRaw === '' || gradeRaw == null ? null : Math.trunc(Number(gradeRaw));
+  const studentIds: string[] = Array.isArray(req.body?.studentIds)
+    ? req.body.studentIds.filter((id: unknown) => typeof id === 'string')
+    : [];
+
+  if (!KINDS.has(kind) || !SCOPES.has(scope) || title.length < 2 || note.length < 2) {
+    res.status(400).json({ message: 'Kind, scope, title, and note are required.' });
+    return;
+  }
+  if ((kind === 'PHOTO' || kind === 'VIDEO') && !mediaUrl) {
+    res.status(400).json({ message: 'Upload a photo or video for this memorial.' });
+    return;
+  }
+  if (scope === 'STUDENTS') {
+    if (studentIds.length === 0) {
+      res.status(400).json({ message: 'Select at least one student.' });
+      return;
+    }
+    const found = await prisma.studentProfile.count({ where: { id: { in: studentIds } } });
+    if (found !== studentIds.length) {
+      res.status(400).json({ message: 'One or more students were not found.' });
+      return;
+    }
+  } else {
+    if (gradeLevel == null || !Number.isFinite(gradeLevel) || gradeLevel < 0 || gradeLevel > 9) {
+      res.status(400).json({ message: 'Batch memorials need a grade.' });
+      return;
+    }
+    if (!academicYear) {
+      res.status(400).json({ message: 'Batch memorials need an academic year.' });
+      return;
+    }
+  }
+
+  await prisma.schoolMemorialStudent.deleteMany({ where: { memorialId: id } });
+  const row = await prisma.schoolMemorial.update({
+    where: { id },
+    data: {
+      kind,
+      scope,
+      title: title.slice(0, 200),
+      note: note.slice(0, 12000),
+      mediaUrl: mediaUrl || null,
+      gradeLevel: scope === 'BATCH' ? gradeLevel : null,
+      academicYear: scope === 'BATCH' ? academicYear : null,
+      section: scope === 'BATCH' && section ? section : null,
+      students:
+        scope === 'STUDENTS' ? { create: studentIds.map((sid) => ({ studentId: sid })) } : undefined,
+    },
+    include: memorialInclude,
+  });
+
+  res.json({ memorial: mapMemorial(row) });
 }
 
 export async function deleteMemorial(req: Request, res: Response): Promise<void> {

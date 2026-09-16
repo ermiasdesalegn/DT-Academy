@@ -3,6 +3,7 @@ import {
   createMemorial,
   deleteMemorial,
   listMemorials,
+  updateMemorial,
   uploadMemorialMedia,
 } from '../controllers/memorialController';
 import { authMiddleware, requireRole } from '../middleware/auth';
@@ -11,6 +12,9 @@ import { memorialMediaUpload } from '../middleware/memorialMediaUpload';
 
 export const memorialsRouter = Router();
 
+const writers = ['DIRECTOR', 'IT_ADMIN', 'MANAGER', 'TEACHER'] as const;
+const deleters = ['DIRECTOR', 'IT_ADMIN', 'MANAGER'] as const;
+
 memorialsRouter.get(
   '/',
   authMiddleware,
@@ -18,24 +22,21 @@ memorialsRouter.get(
   asyncHandler(listMemorials)
 );
 
-memorialsRouter.post(
-  '/',
-  authMiddleware,
-  requireRole(['DIRECTOR', 'IT_ADMIN', 'MANAGER']),
-  asyncHandler(createMemorial)
-);
+memorialsRouter.post('/', authMiddleware, requireRole([...writers]), asyncHandler(createMemorial));
 
 memorialsRouter.post(
   '/upload',
   authMiddleware,
-  requireRole(['DIRECTOR', 'IT_ADMIN', 'MANAGER']),
+  requireRole([...writers]),
   memorialMediaUpload,
   asyncHandler(uploadMemorialMedia)
 );
 
+memorialsRouter.put('/:id', authMiddleware, requireRole([...writers]), asyncHandler(updateMemorial));
+
 memorialsRouter.delete(
   '/:id',
   authMiddleware,
-  requireRole(['DIRECTOR', 'IT_ADMIN', 'MANAGER']),
+  requireRole([...deleters]),
   asyncHandler(deleteMemorial)
 );

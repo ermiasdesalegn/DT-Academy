@@ -28,6 +28,19 @@ export function useCreateMemorial() {
   });
 }
 
+export function useUpdateMemorial() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, body }: { id: string; body: ICreateSchoolMemorialRequest }) => {
+      const { data } = await api.put<{ memorial: ISchoolMemorial }>(`/memorials/${id}`, body);
+      return data.memorial;
+    },
+    onSuccess: async () => {
+      await client.invalidateQueries({ queryKey: ['memorials'] });
+    },
+  });
+}
+
 export function useUploadMemorialMedia() {
   return useMutation({
     mutationFn: async (file: File) => {

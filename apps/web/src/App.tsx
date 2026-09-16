@@ -92,6 +92,8 @@ export default function App() {
               <Route path="/admin/admissions" element={<AdmitStudentPage />} />
               <Route path="/admin/tuition" element={<TuitionOfficePage />} />
               <Route path="/admin/announcements" element={<AnnouncementsPage />} />
+            </Route>
+            <Route element={<RoleGate allow={['DIRECTOR', 'IT_ADMIN', 'MANAGER', 'TEACHER']} />}>
               <Route path="/admin/memorials" element={<MemorialsPage />} />
             </Route>
           </Route>

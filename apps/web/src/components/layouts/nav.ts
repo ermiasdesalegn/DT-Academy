@@ -55,6 +55,7 @@ export const NAV: Record<UserRole, NavItem[]> = {
   TEACHER: [
     { to: '/admin/teaching', labelKey: 'nav.classes', icon: BookOpen, end: true },
     { to: '/admin/teaching/attendance', labelKey: 'nav.attendance', icon: CalendarCheck },
+    { to: '/admin/memorials', labelKey: 'nav.memorials', icon: Heart },
   ],
   PARENT: [
     { to: '/portal/dashboard', labelKey: 'nav.myChildren', icon: Baby, end: true },

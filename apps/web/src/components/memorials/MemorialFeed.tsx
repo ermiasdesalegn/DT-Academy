@@ -1,25 +1,29 @@
 import type { ISchoolMemorial, MemorialKind } from '@dt-academy/types';
 import { useFormat } from '../../hooks/useFormat';
+import { useT } from '../../hooks/useT';
 import { gradeLabel } from '../../lib/labels';
 
-const KIND_LABEL: Record<MemorialKind, string> = {
-  NOTE: 'Note',
-  BLOG: 'Story',
-  PHOTO: 'Photo',
-  VIDEO: 'Video',
+const KIND_KEYS: Record<MemorialKind, string> = {
+  NOTE: 'memorials.kindNote',
+  BLOG: 'memorials.kindBlog',
+  PHOTO: 'memorials.kindPhoto',
+  VIDEO: 'memorials.kindVideo',
 };
 
 export function MemorialFeed({
   memorials,
   emptyLabel,
   onDelete,
+  onEdit,
   deletingId,
 }: {
   memorials: ISchoolMemorial[];
   emptyLabel: string;
   onDelete?: (id: string) => void;
+  onEdit?: (memorial: ISchoolMemorial) => void;
   deletingId?: string | null;
 }) {
+  const t = useT();
   const { dateTime } = useFormat();
 
   if (memorials.length === 0) {
@@ -38,7 +42,7 @@ export function MemorialFeed({
           ) : null}
           <div className="p-4">
             <p className="text-xs uppercase tracking-wide text-slate-400">
-              {KIND_LABEL[m.kind]}
+              {t(KIND_KEYS[m.kind])}
               {m.scope === 'BATCH' && m.gradeLevel != null
                 ? ` · ${gradeLabel(m.gradeLevel)}${m.section ?? ''} · ${m.academicYear ?? ''}`
                 : ''}
@@ -51,16 +55,27 @@ export function MemorialFeed({
             <p className="mt-2 whitespace-pre-wrap text-sm text-slate-600">{m.note}</p>
             <div className="mt-3 flex items-center justify-between gap-3">
               <p className="text-xs text-slate-400">{dateTime(m.createdAt)}</p>
-              {onDelete ? (
-                <button
-                  type="button"
-                  className="text-xs font-medium text-red-600 hover:underline disabled:opacity-50"
-                  disabled={deletingId === m._id}
-                  onClick={() => onDelete(m._id)}
-                >
-                  {deletingId === m._id ? 'Removing…' : 'Remove'}
-                </button>
-              ) : null}
+              <div className="flex gap-3">
+                {onEdit ? (
+                  <button
+                    type="button"
+                    className="text-xs font-medium text-slate-700 hover:underline"
+                    onClick={() => onEdit(m)}
+                  >
+                    {t('memorials.edit')}
+                  </button>
+                ) : null}
+                {onDelete ? (
+                  <button
+                    type="button"
+                    className="text-xs font-medium text-red-600 hover:underline disabled:opacity-50"
+                    disabled={deletingId === m._id}
+                    onClick={() => onDelete(m._id)}
+                  >
+                    {deletingId === m._id ? t('memorials.removing') : t('memorials.remove')}
+                  </button>
+                ) : null}
+              </div>
             </div>
           </div>
         </li>

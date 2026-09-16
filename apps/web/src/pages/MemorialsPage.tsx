@@ -1,5 +1,5 @@
-import { useMemo, useState, type FormEvent } from 'react';
-import type { MemorialKind, MemorialScope } from '@dt-academy/types';
+import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import type { ISchoolMemorial, MemorialKind, MemorialScope } from '@dt-academy/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MemorialFeed } from '../components/memorials/MemorialFeed';
@@ -8,10 +8,12 @@ import {
   useCreateMemorial,
   useDeleteMemorial,
   useMemorials,
+  useUpdateMemorial,
   useUploadMemorialMedia,
 } from '../hooks/useMemorials';
 import { useUsers } from '../hooks/useUsers';
 import { useT } from '../hooks/useT';
+import { useAuthStore } from '../store/authStore';
 import { gradeLabel } from '../lib/labels';
 
 const KINDS: { id: MemorialKind; labelKey: string }[] = [
@@ -23,13 +25,15 @@ const KINDS: { id: MemorialKind; labelKey: string }[] = [
 
 export function MemorialsPage() {
   const t = useT();
+  const role = useAuthStore((s) => s.user?.role);
+  const canDelete = role === 'DIRECTOR' || role === 'IT_ADMIN' || role === 'MANAGER';
   const list = useMemorials();
-  const students = useUsers('students');
-  const former = useUsers('former-students');
   const create = useCreateMemorial();
+  const update = useUpdateMemorial();
   const upload = useUploadMemorialMedia();
   const remove = useDeleteMemorial();
 
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [kind, setKind] = useState<MemorialKind>('NOTE');
   const [scope, setScope] = useState<MemorialScope>('STUDENTS');
   const [title, setTitle] = useState('');
@@ -40,9 +44,18 @@ export function MemorialsPage() {
   const [section, setSection] = useState('');
   const [selected, setSelected] = useState<string[]>([]);
   const [studentQuery, setStudentQuery] = useState('');
+  const [debouncedQ, setDebouncedQ] = useState('');
 
-  const people = useMemo(() => {
-    const rows = [...(students.data ?? []), ...(former.data ?? [])];
+  useEffect(() => {
+    const id = window.setTimeout(() => setDebouncedQ(studentQuery.trim()), 300);
+    return () => window.clearTimeout(id);
+  }, [studentQuery]);
+
+  const students = useUsers({ group: 'students', q: debouncedQ, take: 40 });
+  const former = useUsers({ group: 'former-students', q: debouncedQ, take: 40 });
+
+  const filteredPeople = useMemo(() => {
+    const rows = [...(students.data?.users ?? []), ...(former.data?.users ?? [])];
     const seen = new Set<string>();
     return rows.filter((u) => {
       const id = u.studentProfile?._id;
@@ -52,17 +65,32 @@ export function MemorialsPage() {
     });
   }, [students.data, former.data]);
 
-  const filteredPeople = useMemo(() => {
-    const q = studentQuery.trim().toLowerCase();
-    if (!q) return people.slice(0, 40);
-    return people
-      .filter((u) => {
-        const name = u.name.toLowerCase();
-        const id = u.studentProfile?.studentIdNumber.toLowerCase() ?? '';
-        return name.includes(q) || id.includes(q);
-      })
-      .slice(0, 40);
-  }, [people, studentQuery]);
+  function resetForm() {
+    setEditingId(null);
+    setKind('NOTE');
+    setScope('STUDENTS');
+    setTitle('');
+    setNote('');
+    setMediaUrl('');
+    setGradeLevel('1');
+    setAcademicYear('');
+    setSection('');
+    setSelected([]);
+  }
+
+  function loadEdit(m: ISchoolMemorial) {
+    setEditingId(m._id);
+    setKind(m.kind);
+    setScope(m.scope);
+    setTitle(m.title);
+    setNote(m.note);
+    setMediaUrl(m.mediaUrl ?? '');
+    setGradeLevel(m.gradeLevel != null ? String(m.gradeLevel) : '1');
+    setAcademicYear(m.academicYear ?? '');
+    setSection(m.section ?? '');
+    setSelected(m.students.map((s) => s.studentId));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
 
   async function onFile(file: File | undefined) {
     if (!file) return;
@@ -76,30 +104,28 @@ export function MemorialsPage() {
 
   function onSubmit(e: FormEvent) {
     e.preventDefault();
-    create.mutate(
-      {
-        kind,
-        scope,
-        title,
-        note,
-        mediaUrl: mediaUrl || undefined,
-        gradeLevel: scope === 'BATCH' ? Number(gradeLevel) : '',
-        academicYear: scope === 'BATCH' ? academicYear : undefined,
-        section: scope === 'BATCH' ? section || undefined : undefined,
-        studentIds: scope === 'STUDENTS' ? selected : undefined,
-      },
-      {
-        onSuccess: () => {
-          setTitle('');
-          setNote('');
-          setMediaUrl('');
-          setSelected([]);
-        },
-      }
-    );
+    const body = {
+      kind,
+      scope,
+      title,
+      note,
+      mediaUrl: mediaUrl || undefined,
+      gradeLevel: scope === 'BATCH' ? Number(gradeLevel) : ('' as const),
+      academicYear: scope === 'BATCH' ? academicYear : undefined,
+      section: scope === 'BATCH' ? section || undefined : undefined,
+      studentIds: scope === 'STUDENTS' ? selected : undefined,
+    };
+    if (editingId) {
+      update.mutate({ id: editingId, body }, { onSuccess: () => resetForm() });
+    } else {
+      create.mutate(body, { onSuccess: () => resetForm() });
+    }
   }
 
   const needsMedia = kind === 'PHOTO' || kind === 'VIDEO';
+  const peopleLoading = students.isFetching || former.isFetching;
+  const saving = create.isPending || update.isPending;
+  const saveError = create.isError || update.isError;
 
   return (
     <div className="mx-auto max-w-3xl space-y-8">
@@ -109,6 +135,14 @@ export function MemorialsPage() {
       </div>
 
       <form className="space-y-3 rounded-2xl border border-slate-200 bg-white p-5" onSubmit={onSubmit}>
+        {editingId ? (
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-sm font-medium text-slate-700">{t('memorials.edit')}</p>
+            <Button type="button" variant="ghost" size="sm" onClick={resetForm}>
+              {t('memorials.cancelEdit')}
+            </Button>
+          </div>
+        ) : null}
         <div className="flex flex-wrap gap-3">
           <label className="text-sm">
             <span className="font-medium text-slate-700">{t('memorials.kind')}</span>
@@ -137,12 +171,7 @@ export function MemorialsPage() {
           </label>
         </div>
 
-        <Input
-          required
-          placeholder={t('memorials.titlePh')}
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-        />
+        <Input required placeholder={t('memorials.titlePh')} value={title} onChange={(e) => setTitle(e.target.value)} />
         <textarea
           required
           rows={5}
@@ -159,7 +188,11 @@ export function MemorialsPage() {
             </p>
             <input
               type="file"
-              accept={kind === 'PHOTO' ? 'image/jpeg,image/png,image/webp,image/gif' : 'video/mp4,video/webm,video/quicktime'}
+              accept={
+                kind === 'PHOTO'
+                  ? 'image/jpeg,image/png,image/webp,image/gif'
+                  : 'video/mp4,video/webm,video/quicktime'
+              }
               onChange={(e) => void onFile(e.target.files?.[0])}
             />
             {upload.isPending ? <p className="text-xs text-slate-500">{t('memorials.uploading')}</p> : null}
@@ -180,7 +213,9 @@ export function MemorialsPage() {
               onChange={(e) => setStudentQuery(e.target.value)}
             />
             <div className="max-h-48 overflow-y-auto rounded-md border border-slate-200">
-              {filteredPeople.length === 0 ? (
+              {peopleLoading ? (
+                <p className="p-3 text-sm text-slate-500">{t('memorials.loading')}</p>
+              ) : filteredPeople.length === 0 ? (
                 <p className="p-3 text-sm text-slate-500">{t('memorials.noStudents')}</p>
               ) : (
                 filteredPeople.map((u) => {
@@ -237,20 +272,15 @@ export function MemorialsPage() {
             </label>
             <label className="text-sm">
               <span className="font-medium text-slate-700">{t('memorials.section')}</span>
-              <Input
-                className="mt-1"
-                placeholder="A"
-                value={section}
-                onChange={(e) => setSection(e.target.value)}
-              />
+              <Input className="mt-1" placeholder="A" value={section} onChange={(e) => setSection(e.target.value)} />
             </label>
           </div>
         )}
 
-        <Button type="submit" disabled={create.isPending || (needsMedia && !mediaUrl)}>
-          {create.isPending ? t('memorials.saving') : t('memorials.publish')}
+        <Button type="submit" disabled={saving || (needsMedia && !mediaUrl)}>
+          {saving ? t('memorials.saving') : editingId ? t('memorials.update') : t('memorials.publish')}
         </Button>
-        {create.isError ? <p className="text-sm text-red-600">{t('memorials.saveError')}</p> : null}
+        {saveError ? <p className="text-sm text-red-600">{t('memorials.saveError')}</p> : null}
       </form>
 
       {list.isLoading ? (
@@ -262,7 +292,8 @@ export function MemorialsPage() {
           memorials={list.data ?? []}
           emptyLabel={t('memorials.empty')}
           deletingId={remove.isPending ? remove.variables : null}
-          onDelete={(id) => remove.mutate(id)}
+          onEdit={loadEdit}
+          onDelete={canDelete ? (id) => remove.mutate(id) : undefined}
         />
       )}
     </div>
