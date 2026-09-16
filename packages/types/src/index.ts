@@ -74,6 +74,16 @@ export interface ICourse {
   section: string;
   teacherId: string;
   academicYear: string;
+  teacherName?: string;
+}
+
+export interface IUpsertClassCourseRequest {
+  name: string;
+  code: string;
+  gradeLevel: number;
+  section: string;
+  academicYear: string;
+  teacherId: string;
 }
 
 export interface IGradeSheet {

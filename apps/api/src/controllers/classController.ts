@@ -1,7 +1,29 @@
 import type { Request, Response } from 'express';
-import type { IClassGroup } from '@dt-academy/types';
+import type { IClassGroup, ICourse } from '@dt-academy/types';
 import { prisma } from '../lib/prisma';
 import { buildClassOverall } from '../lib/classOverall';
+
+function mapCourse(row: {
+  id: string;
+  name: string;
+  code: string;
+  gradeLevel: number;
+  section: string;
+  teacherId: string;
+  academicYear: string;
+  teacher?: { name: string } | null;
+}): ICourse {
+  return {
+    _id: row.id,
+    name: row.name,
+    code: row.code,
+    gradeLevel: row.gradeLevel,
+    section: row.section,
+    teacherId: row.teacherId,
+    academicYear: row.academicYear,
+    teacherName: row.teacher?.name,
+  };
+}
 
 export async function listClasses(_req: Request, res: Response): Promise<void> {
   const students = await prisma.studentProfile.findMany({
@@ -104,6 +126,73 @@ export async function getClassOverall(req: Request, res: Response): Promise<void
     term: Number.isInteger(term) ? term : undefined,
   });
   res.json({ overall });
+}
+
+export async function listClassCourses(req: Request, res: Response): Promise<void> {
+  const gradeLevel = Math.trunc(Number(req.query.gradeLevel));
+  const section = typeof req.query.section === 'string' ? req.query.section.trim() : '';
+  const academicYear = typeof req.query.academicYear === 'string' ? req.query.academicYear.trim() : '';
+  if (!section || !academicYear || !Number.isFinite(gradeLevel) || gradeLevel < 0 || gradeLevel > 9) {
+    res.status(400).json({ message: 'gradeLevel, section, and academicYear are required' });
+    return;
+  }
+
+  const rows = await prisma.course.findMany({
+    where: { gradeLevel, section, academicYear },
+    orderBy: { name: 'asc' },
+    include: { teacher: { select: { name: true } } },
+  });
+  res.json({ courses: rows.map(mapCourse) });
+}
+
+export async function upsertClassCourse(req: Request, res: Response): Promise<void> {
+  const gradeLevel = Math.trunc(Number(req.body?.gradeLevel));
+  const section = typeof req.body?.section === 'string' ? req.body.section.trim() : '';
+  const academicYear = typeof req.body?.academicYear === 'string' ? req.body.academicYear.trim() : '';
+  const teacherId = typeof req.body?.teacherId === 'string' ? req.body.teacherId.trim() : '';
+  const name = typeof req.body?.name === 'string' ? req.body.name.trim() : '';
+  const code = typeof req.body?.code === 'string' ? req.body.code.trim().toUpperCase() : '';
+
+  if (
+    !section ||
+    !academicYear ||
+    !teacherId ||
+    name.length < 2 ||
+    code.length < 2 ||
+    !Number.isFinite(gradeLevel) ||
+    gradeLevel < 0 ||
+    gradeLevel > 9
+  ) {
+    res.status(400).json({ message: 'name, code, gradeLevel, section, academicYear, and teacherId are required' });
+    return;
+  }
+
+  const teacher = await prisma.user.findUnique({ where: { id: teacherId } });
+  if (!teacher || teacher.role !== 'TEACHER' || teacher.leftAt) {
+    res.status(400).json({ message: 'Pick a teacher account.' });
+    return;
+  }
+
+  const row = await prisma.course.upsert({
+    where: {
+      code_academicYear_gradeLevel_section: { code, academicYear, gradeLevel, section },
+    },
+    create: {
+      name: name.slice(0, 120),
+      code: code.slice(0, 16),
+      gradeLevel,
+      section,
+      academicYear,
+      teacherId,
+    },
+    update: {
+      name: name.slice(0, 120),
+      teacherId,
+    },
+    include: { teacher: { select: { name: true } } },
+  });
+
+  res.json({ course: mapCourse(row) });
 }
 
 export async function getTeachingHome(req: Request, res: Response): Promise<void> {

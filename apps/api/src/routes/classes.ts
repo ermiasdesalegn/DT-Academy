@@ -1,5 +1,12 @@
 import { Router } from 'express';
-import { getClassOverall, getTeachingHome, listClasses, setHomeroom } from '../controllers/classController';
+import {
+  getClassOverall,
+  getTeachingHome,
+  listClassCourses,
+  listClasses,
+  setHomeroom,
+  upsertClassCourse,
+} from '../controllers/classController';
 import { authMiddleware, requireRole } from '../middleware/auth';
 import { asyncHandler } from '../middleware/asyncHandler';
 
@@ -16,6 +23,18 @@ classesRouter.put(
   authMiddleware,
   requireRole(['DIRECTOR', 'IT_ADMIN']),
   asyncHandler(setHomeroom)
+);
+classesRouter.get(
+  '/courses',
+  authMiddleware,
+  requireRole(['DIRECTOR', 'IT_ADMIN']),
+  asyncHandler(listClassCourses)
+);
+classesRouter.put(
+  '/courses',
+  authMiddleware,
+  requireRole(['DIRECTOR', 'IT_ADMIN']),
+  asyncHandler(upsertClassCourse)
 );
 classesRouter.get(
   '/overall',

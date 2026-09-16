@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { IClassGroup, IClassOverall } from '@dt-academy/types';
+import type { IClassGroup, IClassOverall, ICourse, IUpsertClassCourseRequest } from '@dt-academy/types';
 import { api } from '../services/api';
 
 export function useClasses() {
@@ -35,6 +35,47 @@ export function useClassOverall(params: {
         },
       });
       return data.overall;
+    },
+  });
+}
+
+export function useClassCourses(params: {
+  gradeLevel?: number;
+  section?: string;
+  academicYear?: string;
+  enabled?: boolean;
+}) {
+  const enabled =
+    params.enabled !== false &&
+    params.gradeLevel != null &&
+    Boolean(params.section) &&
+    Boolean(params.academicYear);
+  return useQuery({
+    queryKey: ['class-courses', params.gradeLevel, params.section, params.academicYear],
+    enabled,
+    queryFn: async () => {
+      const { data } = await api.get<{ courses: ICourse[] }>('/classes/courses', {
+        params: {
+          gradeLevel: params.gradeLevel,
+          section: params.section,
+          academicYear: params.academicYear,
+        },
+      });
+      return data.courses;
+    },
+  });
+}
+
+export function useUpsertClassCourse() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async (body: IUpsertClassCourseRequest) => {
+      const { data } = await api.put<{ course: ICourse }>('/classes/courses', body);
+      return data.course;
+    },
+    onSuccess: async () => {
+      await client.invalidateQueries({ queryKey: ['class-courses'] });
+      await client.invalidateQueries({ queryKey: ['teaching-me'] });
     },
   });
 }
