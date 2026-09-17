@@ -251,6 +251,8 @@ export interface IAdmitStudentResponse {
 
 export interface IListedUser extends IAuthUser {
   studentProfile?: IStudentProfile;
+  fatherName?: string;
+  siblings?: { id: string; name: string; isFormer: boolean }[];
 }
 
 export interface IPersonHistoryResult {
