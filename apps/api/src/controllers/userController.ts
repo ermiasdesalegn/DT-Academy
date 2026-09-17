@@ -110,11 +110,38 @@ export async function listUsers(req: Request, res: Response): Promise<void> {
       orderBy: { createdAt: 'desc' },
       take,
       skip,
-      include: { studentProfile: true },
+      include: {
+        studentProfile: {
+          include: {
+            parent: {
+              include: {
+                childrenAsParent: {
+                  include: {
+                    user: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
     }),
   ]);
 
-  const listed: IListedUser[] = users.map((user) => toListedUser(user));
+  const listed: IListedUser[] = users.map((user) => {
+    const listedUser = toListedUser(user);
+    if (user.studentProfile?.parent) {
+      listedUser.fatherName = user.studentProfile.parent.name;
+      listedUser.siblings = user.studentProfile.parent.childrenAsParent
+        .filter((child) => child.userId !== user.id)
+        .map((child) => ({
+          id: child.userId,
+          name: child.user.name,
+          isFormer: Boolean(child.isFormer || child.user.leftAt),
+        }));
+    }
+    return listedUser;
+  });
   res.json({ users: listed, total });
 }
 
