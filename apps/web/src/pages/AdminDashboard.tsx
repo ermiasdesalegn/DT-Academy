@@ -159,8 +159,14 @@ export function AdminDashboard() {
                         ? ` · ${user.studentProfile.studentIdNumber} · ${gradeLabel(user.studentProfile.gradeLevel)} · Section ${user.studentProfile.section}`
                         : null}
                       {user.leftAt ? ` · ${t('office.leftOn')} ${new Date(user.leftAt).toLocaleDateString()}` : null}
+                      {user.fatherName ? ` · Father: ${user.fatherName}` : null}
                     </p>
                     {user.leftReason ? <p className="mt-0.5 text-xs text-slate-400">{user.leftReason}</p> : null}
+                    {user.siblings && user.siblings.length > 0 ? (
+                      <p className="mt-0.5 text-xs text-slate-500">
+                        Siblings: {user.siblings.map(s => `${s.name} ${s.isFormer ? '(Former)' : ''}`).join(', ')}
+                      </p>
+                    ) : null}
                   </div>
                   <div className="flex shrink-0 flex-wrap items-center gap-2">
                     <Badge variant="outline">{roleLabel(user.role)}</Badge>
