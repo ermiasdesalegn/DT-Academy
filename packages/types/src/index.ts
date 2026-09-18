@@ -331,6 +331,42 @@ export interface ICreateSchoolMemorialRequest {
   studentIds?: string[];
 }
 
+export type PostKind = 'GENERAL' | 'MEMORY_CHALLENGE';
+
+export interface IPost {
+  _id: string;
+  kind: PostKind;
+  authorId: string;
+  authorName: string;
+  title?: string;
+  content?: string;
+  mediaUrls: string[];
+  studentId?: string;
+  studentName?: string;
+  pastPhotoUrl?: string;
+  currentPhotoUrl?: string;
+  questionText?: string;
+  questionType?: 'TEXT' | 'MULTIPLE_CHOICE';
+  options?: string[];
+  correctAnswer?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ICreatePostRequest {
+  kind: PostKind;
+  title?: string;
+  content?: string;
+  mediaUrls?: string[];
+  studentId?: string;
+  pastPhotoUrl?: string;
+  currentPhotoUrl?: string;
+  questionText?: string;
+  questionType?: 'TEXT' | 'MULTIPLE_CHOICE';
+  options?: string[];
+  correctAnswer?: string;
+}
+
 export interface IFamilyChild {
   name: string;
   profile: IStudentProfile;

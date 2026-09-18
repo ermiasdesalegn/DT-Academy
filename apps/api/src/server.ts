@@ -18,6 +18,7 @@ import { announcementsRouter } from './routes/announcements';
 import { memorialsRouter } from './routes/memorials';
 import { contactRouter } from './routes/contact';
 import { joinRequestsRouter } from './routes/joinRequests';
+import { postsRouter } from './routes/posts';
 import { seedDirector } from './seed/seedDirector';
 import {
   ensurePaymentMonthColumn,
@@ -53,6 +54,7 @@ app.use('/api/memorials', memorialsRouter);
 app.use('/api/site-content', siteContentRouter);
 app.use('/api/contact', contactRouter);
 app.use('/api/join-requests', joinRequestsRouter);
+app.use('/api/posts', postsRouter);
 app.use('/api/uploads', express.static(UPLOAD_DIR));
 
 app.use('/api', (_req, res) => {
