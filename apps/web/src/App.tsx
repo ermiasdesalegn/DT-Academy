@@ -32,6 +32,7 @@ import { TuitionOfficePage } from './pages/TuitionOfficePage';
 import { ClassesOfficePage } from './pages/ClassesOfficePage';
 import { PersonHistoryPage } from './pages/PersonHistoryPage';
 import { MemorialsPage } from './pages/MemorialsPage';
+import { AdminPostsPage } from './pages/AdminPostsPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { ScreenLoader } from './components/ScreenLoader';
 import { useLocaleStore } from './store/localeStore';
@@ -97,6 +98,7 @@ export default function App() {
             </Route>
             <Route element={<RoleGate allow={['DIRECTOR', 'IT_ADMIN', 'MANAGER', 'TEACHER']} />}>
               <Route path="/admin/memorials" element={<MemorialsPage />} />
+              <Route path="/admin/challenges" element={<AdminPostsPage />} />
             </Route>
           </Route>
         </Route>
