@@ -41,6 +41,7 @@ export const en = {
     sheets: 'Exam results',
     notices: 'Notices',
     memorials: 'School Memorials',
+    challenges: 'Challenges',
     attendance: 'Attendance',
     myChildren: 'My children',
     payTuition: 'Pay tuition',
