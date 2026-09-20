@@ -16,6 +16,7 @@ const PUBLIC_NAV = [
   { to: '/about', labelKey: 'nav.about' },
   { to: '/service', labelKey: 'nav.service' },
   { to: '/blog', labelKey: 'nav.blog' },
+  { to: '/posts', labelKey: 'nav.challenges' },
   { to: '/contact', labelKey: 'nav.contact' },
   { to: '/faq', labelKey: 'nav.faq' },
 ];
