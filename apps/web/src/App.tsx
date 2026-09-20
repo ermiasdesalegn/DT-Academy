@@ -16,6 +16,7 @@ import { ServicePage } from './pages/public/Service';
 import { BlogPage } from './pages/public/Blog';
 import { BlogPostPage } from './pages/public/BlogPost';
 import { FaqPage } from './pages/public/Faq';
+import { PostsPage } from './pages/public/PostsPage';
 import { StaffDashboard } from './pages/StaffDashboard';
 import { TeacherDashboard } from './pages/TeacherDashboard';
 import { GradeSheetPage } from './pages/GradeSheetPage';
@@ -112,6 +113,7 @@ export default function App() {
           <Route path="/service" element={<ServicePage />} />
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/blog/:slug" element={<BlogPostPage />} />
+          <Route path="/posts" element={<PostsPage />} />
           <Route path="/faq" element={<FaqPage />} />
 
           <Route element={<ProtectedRoute />}>
