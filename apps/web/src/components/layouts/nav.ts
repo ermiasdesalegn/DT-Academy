@@ -12,6 +12,7 @@ import {
   BookOpen,
   Baby,
   Globe,
+  Camera,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -36,6 +37,7 @@ export const NAV: Record<UserRole, NavItem[]> = {
     { to: '/admin/sheets', labelKey: 'nav.sheets', icon: ClipboardCheck },
     { to: '/admin/announcements', labelKey: 'nav.notices', icon: FileText },
     { to: '/admin/memorials', labelKey: 'nav.memorials', icon: Heart },
+    { to: '/admin/challenges', labelKey: 'nav.challenges', icon: Camera },
   ],
   IT_ADMIN: [
     { to: '/admin', labelKey: 'nav.people', icon: Users, end: true },
@@ -46,6 +48,7 @@ export const NAV: Record<UserRole, NavItem[]> = {
     { to: '/admin/tuition', labelKey: 'nav.tuition', icon: CreditCard },
     { to: '/admin/announcements', labelKey: 'nav.notices', icon: FileText },
     { to: '/admin/memorials', labelKey: 'nav.memorials', icon: Heart },
+    { to: '/admin/challenges', labelKey: 'nav.challenges', icon: Camera },
   ],
   MANAGER: [
     { to: '/admin', labelKey: 'nav.people', icon: Users, end: true },
@@ -54,6 +57,7 @@ export const NAV: Record<UserRole, NavItem[]> = {
     { to: '/admin/tuition', labelKey: 'nav.tuition', icon: CreditCard },
     { to: '/admin/announcements', labelKey: 'nav.notices', icon: FileText },
     { to: '/admin/memorials', labelKey: 'nav.memorials', icon: Heart },
+    { to: '/admin/challenges', labelKey: 'nav.challenges', icon: Camera },
   ],
   TEACHER: [
     { to: '/admin/teaching', labelKey: 'nav.classes', icon: BookOpen, end: true },
