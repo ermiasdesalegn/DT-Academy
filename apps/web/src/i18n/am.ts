@@ -43,6 +43,7 @@ export const am: Messages = {
     sheets: 'የፈተና ውጤቶች',
     notices: 'ማስታወቂያዎች',
     memorials: 'የትምህርት ቤት መታሰቢያዎች',
+    challenges: 'የማስታወሻ ጥያቄዎች',
     attendance: 'መገኘት',
     myChildren: 'ልጆቼ',
     payTuition: 'ክፍያ ክፈል',
