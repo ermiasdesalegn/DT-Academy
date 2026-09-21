@@ -1,20 +1,20 @@
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+// import { Badge } from '@/components/ui/badge';
+// import { Button } from '@/components/ui/button';
 import { EnrollmentCharts } from '../components/office/InsightsCharts';
 import { PageLoader } from '../components/layouts/PageLoader';
 import { StatCard } from '../components/office/StatCard';
 import { useInsights } from '../hooks/useInsights';
 import { useFormat } from '../hooks/useFormat';
 import { useT } from '../hooks/useT';
-import { usePayments, useVerifyPayment } from '../hooks/usePayments';
-import { methodLabel } from '../lib/labels';
+// import { usePayments, useVerifyPayment } from '../hooks/usePayments';
+// import { methodLabel } from '../lib/labels';
 
 export function StaffDashboard() {
   const t = useT();
   const { n } = useFormat();
-  const payments = usePayments('PENDING');
+  // const payments = usePayments('PENDING');
   const insights = useInsights();
-  const verify = useVerifyPayment();
+  // const verify = useVerifyPayment();
 
   const d = insights.data;
   const students = d?.students;
@@ -91,7 +91,7 @@ export function StaffDashboard() {
               )}
             </section>
 
-            <section className="rounded-lg border border-slate-200 bg-white p-6">
+            {/* <section className="rounded-lg border border-slate-200 bg-white p-6">
               <h2 className="text-sm font-semibold text-slate-900">{t('office.recentTuition')}</h2>
               <p className="mt-1 text-sm text-slate-500">{t('office.recentTuitionHint')}</p>
               {payments.isLoading ? (
@@ -126,7 +126,7 @@ export function StaffDashboard() {
                   ))}
                 </ul>
               )}
-            </section>
+            </section> */}
           </div>
         </>
       )}

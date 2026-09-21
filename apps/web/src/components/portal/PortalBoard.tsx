@@ -27,7 +27,7 @@ export function PortalBoard({
   teachers,
   attendance,
   notices,
-  dueEtb,
+  // dueEtb,
   onOpenNotices,
   onOpenAttendance,
   onOpenTeachers,
@@ -39,7 +39,7 @@ export function PortalBoard({
   teachers: IFamilyTeacher[];
   attendance: IFamilyAttendance[];
   notices: IPortalAnnouncement[];
-  dueEtb?: number;
+  // dueEtb?: number;
   onOpenNotices?: () => void;
   onOpenAttendance?: () => void;
   onOpenTeachers?: () => void;
@@ -95,15 +95,15 @@ export function PortalBoard({
               : t('portal.noRollYet')
           }
         />
-        {variant === 'parent' && dueEtb != null && dueEtb > 0 ? (
+        {/* {variant === 'parent' && dueEtb != null && dueEtb > 0 ? (
           <StatCard label={t('portal.statDue')} value={`${n(dueEtb)} ETB`} hint={t('portal.due')} />
-        ) : (
+        ) : ( */}
           <StatCard
             label={t('portal.statTeachers')}
             value={teachers.length ? n(teachers.length) : '—'}
             hint={teachers.length ? undefined : t('portal.namesFill')}
           />
-        )}
+        {/* )} */}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">

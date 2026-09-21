@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Wallet } from 'lucide-react';
-import type { IFamilyAttendance, IFamilyChild, IFamilyTeacher, IPortalAnnouncement, ITuitionMonth } from '@dt-academy/types';
+// import { Link } from 'react-router-dom';
+// import { Wallet } from 'lucide-react';
+import type { IFamilyAttendance, IFamilyChild, IFamilyTeacher, IPortalAnnouncement } from '@dt-academy/types';
 import { DEFAULT_SITE_CONTENT } from '@dt-academy/types';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { PortalBoard } from '../components/portal/PortalBoard';
@@ -26,12 +26,12 @@ export function ParentDashboard() {
   const [tab, setTab] = useState<Tab>('class');
 
   const selected = children.find((c) => c.profile._id === childId) ?? children[0];
-  const due = selected ? dueAmount(selected.tuitionMonths ?? []) : 0;
+  // const due = selected ? dueAmount(selected.tuitionMonths ?? []) : 0;
 
   return (
     <div className="bg-slate-50 pb-16">
       <div className="mx-auto max-w-6xl px-4 pt-6 sm:px-6">
-        {due > 0 ? (
+        {/* {due > 0 ? (
           <div className="mb-6 flex justify-end">
             <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-full bg-white px-4 py-1.5 text-sm text-stone-600">{t('portal.dueEtb', { amount: due })}</span>
@@ -48,7 +48,7 @@ export function ParentDashboard() {
               </Link>
             </div>
           </div>
-        ) : null}
+        ) : null} */}
 
         {isLoading ? (
           <PageLoader label={t('portal.loadChildren')} variant="portal" />
@@ -124,7 +124,7 @@ function ChildWorkspace({
         teachers={teachers}
         attendance={child.attendance ?? []}
         notices={announcements}
-        dueEtb={dueAmount(child.tuitionMonths ?? [])}
+        // dueEtb={dueAmount(child.tuitionMonths ?? [])}
         onOpenNotices={() => onTab('notices')}
         onOpenAttendance={() => onTab('attendance')}
         onOpenTeachers={() => onTab('class')}
@@ -136,7 +136,7 @@ function ChildWorkspace({
             ['class', 'portal.tabClass'],
             ['report', 'portal.tabReport'],
             ['attendance', 'portal.tabAttendance'],
-            ['payment', 'portal.tabPayment'],
+            // ['payment', 'portal.tabPayment'],
             ['notices', 'portal.tabNotices'],
             ['memorials', 'portal.tabMemorials'],
           ] as const
@@ -168,7 +168,7 @@ function ChildWorkspace({
         />
       ) : null}
       {tab === 'attendance' ? <AttendanceTab rows={child.attendance ?? []} /> : null}
-      {tab === 'payment' ? <PaymentTab child={child} /> : null}
+      {/* {tab === 'payment' ? <PaymentTab child={child} /> : null} */}
       {tab === 'notices' ? <NoticesTab phone={officePhone} announcements={announcements} /> : null}
       {tab === 'memorials' ? <MemorialsTab studentId={child.profile._id} /> : null}
     </div>
@@ -278,74 +278,74 @@ function ReportTab({
   );
 }
 
-function PaymentTab({ child }: { child: IFamilyChild }) {
-  const t = useT();
-  const { n, month } = useFormat();
-  const rows = child.tuitionMonths ?? [];
-  const unpaid = rows.filter((r) => r.status === 'UNPAID');
-  const pending = rows.filter((r) => r.status === 'PENDING');
-  const total = unpaid.reduce((sum, r) => sum + r.totalDueEtb, 0);
-
-  return (
-    <div className="mt-8">
-      <p className="text-[11px] font-medium text-stone-400">{t('portal.tuition')}</p>
-      <h2 className="mt-1 text-2xl font-bold tracking-tight text-black">{t('portal.payments')}</h2>
-      <p className="mt-2 text-sm text-stone-500">
-        {unpaid.length
-          ? t('portal.dueHint', { amount: total })
-          : pending.length
-            ? t('portal.pendingHint')
-            : t('portal.nothingOutstanding')}
-      </p>
-
-      <ul className="mt-6 overflow-hidden rounded-[1.5rem] bg-white shadow-sm">
-        {rows.map((row) => (
-          <li
-            key={row.month}
-            className="flex items-center justify-between border-b border-stone-100 px-5 py-3.5 last:border-0"
-          >
-            <div>
-              <p className="text-sm font-medium text-stone-800">{month(row.month)}</p>
-              <p className="text-xs text-stone-400">
-                {n(row.baseEtb)} ETB
-                {row.penaltyEtb > 0 ? ` ${t('portal.lateAdd', { amount: row.penaltyEtb })}` : ''}
-              </p>
-            </div>
-            <span
-              className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                row.status === 'PAID'
-                  ? 'bg-stone-100 text-black'
-                  : row.status === 'UNPAID'
-                    ? 'bg-red-50 text-red-800'
-                    : row.status === 'PENDING'
-                      ? 'bg-amber-50 text-amber-900'
-                      : 'bg-stone-100 text-stone-500'
-              }`}
-            >
-              {row.status === 'PAID'
-                ? t('portal.paid')
-                : row.status === 'UNPAID'
-                  ? t('portal.due')
-                  : row.status === 'PENDING'
-                    ? t('portal.pending')
-                    : t('portal.upcoming')}
-            </span>
-          </li>
-        ))}
-      </ul>
-
-      {unpaid.length ? (
-        <Link
-          to={`/portal/pay?student=${child.profile._id}`}
-          className="mt-6 inline-flex items-center gap-2 rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white"
-        >
-          <Wallet size={16} />
-          {t('portal.payAmount', { amount: total })}
-        </Link>
-      ) : null}
-    </div>
-  );
-}
+// function PaymentTab({ child }: { child: IFamilyChild }) {
+//   const t = useT();
+//   const { n, month } = useFormat();
+//   const rows = child.tuitionMonths ?? [];
+//   const unpaid = rows.filter((r) => r.status === 'UNPAID');
+//   const pending = rows.filter((r) => r.status === 'PENDING');
+//   const total = unpaid.reduce((sum, r) => sum + r.totalDueEtb, 0);
+// 
+//   return (
+//     <div className="mt-8">
+//       <p className="text-[11px] font-medium text-stone-400">{t('portal.tuition')}</p>
+//       <h2 className="mt-1 text-2xl font-bold tracking-tight text-black">{t('portal.payments')}</h2>
+//       <p className="mt-2 text-sm text-stone-500">
+//         {unpaid.length
+//           ? t('portal.dueHint', { amount: total })
+//           : pending.length
+//             ? t('portal.pendingHint')
+//             : t('portal.nothingOutstanding')}
+//       </p>
+// 
+//       <ul className="mt-6 overflow-hidden rounded-[1.5rem] bg-white shadow-sm">
+//         {rows.map((row) => (
+//           <li
+//             key={row.month}
+//             className="flex items-center justify-between border-b border-stone-100 px-5 py-3.5 last:border-0"
+//           >
+//             <div>
+//               <p className="text-sm font-medium text-stone-800">{month(row.month)}</p>
+//               <p className="text-xs text-stone-400">
+//                 {n(row.baseEtb)} ETB
+//                 {row.penaltyEtb > 0 ? ` ${t('portal.lateAdd', { amount: row.penaltyEtb })}` : ''}
+//               </p>
+//             </div>
+//             <span
+//               className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+//                 row.status === 'PAID'
+//                   ? 'bg-stone-100 text-black'
+//                   : row.status === 'UNPAID'
+//                     ? 'bg-red-50 text-red-800'
+//                     : row.status === 'PENDING'
+//                       ? 'bg-amber-50 text-amber-900'
+//                       : 'bg-stone-100 text-stone-500'
+//               }`}
+//             >
+//               {row.status === 'PAID'
+//                 ? t('portal.paid')
+//                 : row.status === 'UNPAID'
+//                   ? t('portal.due')
+//                   : row.status === 'PENDING'
+//                     ? t('portal.pending')
+//                     : t('portal.upcoming')}
+//             </span>
+//           </li>
+//         ))}
+//       </ul>
+// 
+//       {unpaid.length ? (
+//         <Link
+//           to={`/portal/pay?student=${child.profile._id}`}
+//           className="mt-6 inline-flex items-center gap-2 rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white"
+//         >
+//           <Wallet size={16} />
+//           {t('portal.payAmount', { amount: total })}
+//         </Link>
+//       ) : null}
+//     </div>
+//   );
+// }
 
 function AttendanceTab({ rows }: { rows: IFamilyAttendance[] }) {
   const t = useT();
@@ -401,9 +401,10 @@ function NoticesTab({ phone, announcements }: { phone: string; announcements: IP
   );
 }
 
-function dueAmount(rows: ITuitionMonth[]) {
-  return rows.filter((r) => r.status === 'UNPAID').reduce((sum, r) => sum + r.totalDueEtb, 0);
-}
+// function dueAmount(rows: ITuitionMonth[]) {
+//   const unpaid = rows.filter((r) => r.status === 'UNPAID');
+//   return unpaid.reduce((sum, r) => sum + r.totalDueEtb, 0);
+// }
 
 function initials(name: string) {
   return name

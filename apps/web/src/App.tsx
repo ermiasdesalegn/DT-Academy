@@ -24,12 +24,12 @@ import { AttendancePage } from './pages/AttendancePage';
 import { SheetsQueuePage } from './pages/SheetsQueuePage';
 import { AnnouncementsPage } from './pages/AnnouncementsPage';
 import { FamilyDashboard } from './pages/FamilyDashboard';
-import { PayTuitionPage } from './pages/PayTuitionPage';
+// import { PayTuitionPage } from './pages/PayTuitionPage';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { AdmitStudentPage } from './pages/AdmitStudentPage';
 import { JoinRequestsPage } from './pages/JoinRequestsPage';
 import { WebsiteContentPage } from './pages/WebsiteContentPage';
-import { TuitionOfficePage } from './pages/TuitionOfficePage';
+// import { TuitionOfficePage } from './pages/TuitionOfficePage';
 import { ClassesOfficePage } from './pages/ClassesOfficePage';
 import { PersonHistoryPage } from './pages/PersonHistoryPage';
 import { MemorialsPage } from './pages/MemorialsPage';
@@ -94,7 +94,7 @@ export default function App() {
               <Route path="/admin/people/:id/history" element={<PersonHistoryPage />} />
               <Route path="/admin/admissions" element={<AdmitStudentPage />} />
               <Route path="/admin/join-requests" element={<JoinRequestsPage />} />
-              <Route path="/admin/tuition" element={<TuitionOfficePage />} />
+              {/* <Route path="/admin/tuition" element={<TuitionOfficePage />} /> */}
               <Route path="/admin/announcements" element={<AnnouncementsPage />} />
             </Route>
             <Route element={<RoleGate allow={['DIRECTOR', 'IT_ADMIN', 'MANAGER', 'TEACHER']} />}>
@@ -119,8 +119,8 @@ export default function App() {
           <Route element={<ProtectedRoute />}>
             <Route element={<RoleGate allow={['PARENT', 'STUDENT']} />}>
               <Route path="/portal/dashboard" element={<FamilyDashboard />} />
-              <Route path="/portal/pay/return" element={<PayTuitionPage />} />
-              <Route path="/portal/pay" element={<PayTuitionPage />} />
+              {/* <Route path="/portal/pay/return" element={<PayTuitionPage />} /> */}
+              {/* <Route path="/portal/pay" element={<PayTuitionPage />} /> */}
             </Route>
           </Route>
         </Route>
@@ -133,7 +133,7 @@ export default function App() {
         <Route path="/admin/admit" element={<Navigate to="/admin/admissions" replace />} />
         <Route path="/teacher" element={<Navigate to="/admin/teaching" replace />} />
         <Route path="/parent" element={<Navigate to="/portal/dashboard" replace />} />
-        <Route path="/parent/pay" element={<Navigate to="/portal/pay" replace />} />
+        {/* <Route path="/parent/pay" element={<Navigate to="/portal/pay" replace />} /> */}
         <Route path="/student" element={<Navigate to="/portal/dashboard" replace />} />
         <Route path="/portal/student" element={<Navigate to="/portal/dashboard" replace />} />
         <Route path="*" element={<NotFoundPage />} />

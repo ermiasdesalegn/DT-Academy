@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
-import type { IListedUser, PaymentMethod, UserRole } from '@dt-academy/types';
+import type { IListedUser, UserRole } from '@dt-academy/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useCreatePayment } from '../hooks/usePayments';
+// import { useCreatePayment } from '../hooks/usePayments';
 import { PageLoader } from '../components/layouts/PageLoader';
 import { EmptyState } from '../components/layouts/Page';
 import { useMarkFormer, useRestoreUser, useUsers, type PeopleGroup } from '../hooks/useUsers';
@@ -35,7 +35,7 @@ export function AdminDashboard() {
   const markFormer = useMarkFormer();
   const restore = useRestoreUser();
   const [staffOpen, setStaffOpen] = useState(false);
-  const [payStudent, setPayStudent] = useState<IListedUser | null>(null);
+  // const [payStudent, setPayStudent] = useState<IListedUser | null>(null);
   const [passwordUser, setPasswordUser] = useState<IListedUser | null>(null);
   const [formerTarget, setFormerTarget] = useState<IListedUser | null>(null);
   const [formerReason, setFormerReason] = useState('');
@@ -180,7 +180,7 @@ export function AdminDashboard() {
                         {t('office.setPassword')}
                       </Button>
                     ) : null}
-                    {user.studentProfile && !former ? (
+                    {/* {user.studentProfile && !former ? (
                       <>
                         <Badge
                           className={
@@ -195,7 +195,7 @@ export function AdminDashboard() {
                           {t('office.recordPayment')}
                         </Button>
                       </>
-                    ) : null}
+                    ) : null} */}
                     {(user.role === 'STUDENT' || user.role === 'TEACHER') && (
                       <Button type="button" variant="outline" size="sm" asChild>
                         <Link to={`/admin/people/${user._id}/history`}>{t('office.viewHistory')}</Link>
@@ -226,7 +226,7 @@ export function AdminDashboard() {
       </section>
 
       <AddStaffDialog open={staffOpen} onOpenChange={setStaffOpen} />
-      <RecordPaymentDialog student={payStudent} onOpenChange={(open) => !open && setPayStudent(null)} />
+      {/* <RecordPaymentDialog student={payStudent} onOpenChange={(open) => !open && setPayStudent(null)} /> */}
       <SetPasswordDialog user={passwordUser} onOpenChange={(open) => !open && setPasswordUser(null)} />
 
       <Dialog
@@ -365,156 +365,156 @@ function AddStaffDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (
   );
 }
 
-function RecordPaymentDialog({
-  student,
-  onOpenChange,
-}: {
-  student: IListedUser | null;
-  onOpenChange: (open: boolean) => void;
-}) {
-  const create = useCreatePayment();
-  const profile = student?.studentProfile;
-  const [error, setError] = useState('');
-  const [form, setForm] = useState({
-    amount: '',
-    method: 'CASH' as PaymentMethod,
-    referencePNR: '',
-    academicYear: '',
-    term: '1',
-    month: String(new Date().getMonth() + 1),
-  });
-
-  useEffect(() => {
-    setForm({
-      amount: '',
-      method: 'CASH',
-      referencePNR: '',
-      academicYear: profile?.academicYear ?? '',
-      term: '1',
-      month: String(new Date().getMonth() + 1),
-    });
-    setError('');
-  }, [profile]);
-
-  const year = form.academicYear || profile?.academicYear || '';
-
-  async function onSubmit(e: FormEvent) {
-    e.preventDefault();
-    if (!profile) return;
-    setError('');
-    try {
-      await create.mutateAsync({
-        studentProfileId: profile._id,
-        amount: Number(form.amount),
-        method: form.method,
-        referencePNR: form.referencePNR,
-        academicYear: year,
-        term: Number(form.term),
-        month: Number(form.month),
-      });
-      onOpenChange(false);
-      setForm({ amount: '', method: 'CASH', referencePNR: '', academicYear: '', term: '1', month: String(new Date().getMonth() + 1) });
-    } catch (err) {
-      if (axios.isAxiosError(err) && typeof err.response?.data?.message === 'string') {
-        setError(err.response.data.message);
-      } else {
-        setError('Could not record this payment.');
-      }
-    }
-  }
-
-  return (
-    <Dialog open={Boolean(student)} onOpenChange={onOpenChange}>
-      <DialogContent className="rounded-2xl border-gray-200 shadow-none sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Record payment</DialogTitle>
-          <DialogDescription>
-            {student
-              ? `${student.name}. Cash at office or bank slip. Status starts as pending until verified on Overview.`
-              : ''}
-          </DialogDescription>
-        </DialogHeader>
-        <form className="grid gap-3" onSubmit={onSubmit}>
-          <label className="text-sm">
-            <span className="font-medium text-slate-700">Amount (ETB)</span>
-            <input
-              required
-              type="number"
-              min="1"
-              step="0.01"
-              className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
-              value={form.amount}
-              onChange={(e) => setForm({ ...form, amount: e.target.value })}
-            />
-          </label>
-          <label className="text-sm">
-            <span className="font-medium text-slate-700">Method</span>
-            <select
-              className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
-              value={form.method}
-              onChange={(e) => setForm({ ...form, method: e.target.value as PaymentMethod })}
-            >
-              <option value="CASH">Cash at office</option>
-              <option value="BANK_TRANSFER">Bank transfer</option>
-              <option value="TELEBIRR">Telebirr</option>
-              <option value="MPESA">M-Pesa</option>
-            </select>
-          </label>
-          <label className="text-sm">
-            <span className="font-medium text-slate-700">Receipt number</span>
-            <input
-              required
-              className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
-              value={form.referencePNR}
-              onChange={(e) => setForm({ ...form, referencePNR: e.target.value })}
-            />
-          </label>
-          <div className="grid grid-cols-2 gap-3">
-            <label className="text-sm">
-              <span className="font-medium text-slate-700">Academic year</span>
-              <input
-                required
-                className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
-                value={year}
-                onChange={(e) => setForm({ ...form, academicYear: e.target.value })}
-              />
-            </label>
-            <label className="text-sm">
-              <span className="font-medium text-slate-700">Month</span>
-              <select
-                className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
-                value={form.month}
-                onChange={(e) => setForm({ ...form, month: e.target.value })}
-              >
-                {['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map((name, i) => (
-                  <option key={name} value={String(i + 1)}>
-                    {name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="text-sm">
-              <span className="font-medium text-slate-700">Term</span>
-              <select
-                className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
-                value={form.term}
-                onChange={(e) => setForm({ ...form, term: e.target.value })}
-              >
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-              </select>
-            </label>
-          </div>
-          {error ? <p className="text-sm text-red-600">{error}</p> : null}
-          <Button type="submit" disabled={create.isPending}>
-            {create.isPending ? 'Saving…' : 'Save as pending'}
-          </Button>
-        </form>
-      </DialogContent>
-    </Dialog>
-  );
-}
+// function RecordPaymentDialog({
+//   student,
+//   onOpenChange,
+// }: {
+//   student: IListedUser | null;
+//   onOpenChange: (open: boolean) => void;
+// }) {
+//   const create = useCreatePayment();
+//   const profile = student?.studentProfile;
+//   const [error, setError] = useState('');
+//   const [form, setForm] = useState({
+//     amount: '',
+//     method: 'CASH' as PaymentMethod,
+//     referencePNR: '',
+//     academicYear: '',
+//     term: '1',
+//     month: String(new Date().getMonth() + 1),
+//   });
+// 
+//   useEffect(() => {
+//     setForm({
+//       amount: '',
+//       method: 'CASH',
+//       referencePNR: '',
+//       academicYear: profile?.academicYear ?? '',
+//       term: '1',
+//       month: String(new Date().getMonth() + 1),
+//     });
+//     setError('');
+//   }, [profile]);
+// 
+//   const year = form.academicYear || profile?.academicYear || '';
+// 
+//   async function onSubmit(e: FormEvent) {
+//     e.preventDefault();
+//     if (!profile) return;
+//     setError('');
+//     try {
+//       await create.mutateAsync({
+//         studentProfileId: profile._id,
+//         amount: Number(form.amount),
+//         method: form.method,
+//         referencePNR: form.referencePNR,
+//         academicYear: year,
+//         term: Number(form.term),
+//         month: Number(form.month),
+//       });
+//       onOpenChange(false);
+//       setForm({ amount: '', method: 'CASH', referencePNR: '', academicYear: '', term: '1', month: String(new Date().getMonth() + 1) });
+//     } catch (err) {
+//       if (axios.isAxiosError(err) && typeof err.response?.data?.message === 'string') {
+//         setError(err.response.data.message);
+//       } else {
+//         setError('Could not record this payment.');
+//       }
+//     }
+//   }
+// 
+//   return (
+//     <Dialog open={Boolean(student)} onOpenChange={onOpenChange}>
+//       <DialogContent className="rounded-2xl border-gray-200 shadow-none sm:max-w-md">
+//         <DialogHeader>
+//           <DialogTitle>Record payment</DialogTitle>
+//           <DialogDescription>
+//             {student
+//               ? `${student.name}. Cash at office or bank slip. Status starts as pending until verified on Overview.`
+//               : ''}
+//           </DialogDescription>
+//         </DialogHeader>
+//         <form className="grid gap-3" onSubmit={onSubmit}>
+//           <label className="text-sm">
+//             <span className="font-medium text-slate-700">Amount (ETB)</span>
+//             <input
+//               required
+//               type="number"
+//               min="1"
+//               step="0.01"
+//               className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
+//               value={form.amount}
+//               onChange={(e) => setForm({ ...form, amount: e.target.value })}
+//             />
+//           </label>
+//           <label className="text-sm">
+//             <span className="font-medium text-slate-700">Method</span>
+//             <select
+//               className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
+//               value={form.method}
+//               onChange={(e) => setForm({ ...form, method: e.target.value as PaymentMethod })}
+//             >
+//               <option value="CASH">Cash at office</option>
+//               <option value="BANK_TRANSFER">Bank transfer</option>
+//               <option value="TELEBIRR">Telebirr</option>
+//               <option value="MPESA">M-Pesa</option>
+//             </select>
+//           </label>
+//           <label className="text-sm">
+//             <span className="font-medium text-slate-700">Receipt number</span>
+//             <input
+//               required
+//               className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
+//               value={form.referencePNR}
+//               onChange={(e) => setForm({ ...form, referencePNR: e.target.value })}
+//             />
+//           </label>
+//           <div className="grid grid-cols-2 gap-3">
+//             <label className="text-sm">
+//               <span className="font-medium text-slate-700">Academic year</span>
+//               <input
+//                 required
+//                 className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
+//                 value={year}
+//                 onChange={(e) => setForm({ ...form, academicYear: e.target.value })}
+//               />
+//             </label>
+//             <label className="text-sm">
+//               <span className="font-medium text-slate-700">Month</span>
+//               <select
+//                 className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
+//                 value={form.month}
+//                 onChange={(e) => setForm({ ...form, month: e.target.value })}
+//               >
+//                 {['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map((name, i) => (
+//                   <option key={name} value={String(i + 1)}>
+//                     {name}
+//                   </option>
+//                 ))}
+//               </select>
+//             </label>
+//             <label className="text-sm">
+//               <span className="font-medium text-slate-700">Term</span>
+//               <select
+//                 className="mt-1.5 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-400"
+//                 value={form.term}
+//                 onChange={(e) => setForm({ ...form, term: e.target.value })}
+//               >
+//                 <option value="1">1</option>
+//                 <option value="2">2</option>
+//                 <option value="3">3</option>
+//               </select>
+//             </label>
+//           </div>
+//           {error ? <p className="text-sm text-red-600">{error}</p> : null}
+//           <Button type="submit" disabled={create.isPending}>
+//             {create.isPending ? 'Saving…' : 'Save as pending'}
+//           </Button>
+//         </form>
+//       </DialogContent>
+//     </Dialog>
+//   );
+// }
 
 function SetPasswordDialog({
   user,

@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { PageLoader } from '../components/layouts/PageLoader';
 import { EmptyState } from '../components/layouts/Page';
 import { api } from '../services/api';
-import type { PostKind, IPost } from '@dt-academy/types';
+// import type { PostKind, IPost } from '@dt-academy/types';
 import { useUsers } from '../hooks/useUsers';
 
 export function AdminPostsPage() {
