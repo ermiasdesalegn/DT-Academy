@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
 import { PortalBoard } from '../components/portal/PortalBoard';
+import { ReportTab } from '../components/portal/ReportTab';
 import { MemorialFeed } from '../components/memorials/MemorialFeed';
 import { EmptyState } from '../components/layouts/Page';
 import { PageLoader } from '../components/layouts/PageLoader';
@@ -45,7 +46,19 @@ export function StudentDashboard() {
               attendance={attendance}
               notices={notices}
             />
-            <section className="mt-10">
+            <div className="mt-8 border-t border-slate-200 pt-8">
+              <ReportTab
+                rows={(results ?? []).map((r) => ({
+                  subject: r.subject,
+                  teacherName: r.teacherName,
+                  totalScore: String(r.totalScore),
+                  term: t('portal.termN', { n: r.term }),
+                }))}
+                rankings={child.termRankings}
+                hasOfficial={Boolean(results?.length)}
+              />
+            </div>
+            <section className="mt-10 border-t border-slate-200 pt-8">
               <p className="text-[11px] font-medium text-stone-400">{t('memorials.title')}</p>
               <h2 className="mt-1 text-2xl font-bold tracking-tight text-black">{t('portal.tabMemorials')}</h2>
               <p className="mt-2 text-sm text-stone-500">{t('memorials.historyHint')}</p>
