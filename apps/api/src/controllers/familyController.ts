@@ -52,7 +52,7 @@ export async function listMyChildren(req: Request, res: Response): Promise<void>
   });
 
   const courses = await coursesFor(rows);
-  const children: IFamilyChild[] = rows.map((row) => mapFamilyChild(row, courses));
+  const children: IFamilyChild[] = await Promise.all(rows.map((row) => mapFamilyChild(row, courses)));
   const announcements = await listAnnouncementsFor(
     'PARENT',
     rows.map((r) => r.gradeLevel)
@@ -79,5 +79,5 @@ export async function getMyStudent(req: Request, res: Response): Promise<void> {
 
   const courses = await coursesFor([row]);
   const announcements = await listAnnouncementsFor('STUDENT', [row.gradeLevel]);
-  res.json({ child: mapFamilyChild(row, courses), announcements });
+  res.json({ child: await mapFamilyChild(row, courses), announcements });
 }

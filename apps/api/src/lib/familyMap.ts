@@ -1,6 +1,7 @@
 import type { AttendanceStatus, IFamilyChild, IPortalAnnouncement, PaymentMethod } from '@dt-academy/types';
 import { academicYearNumber } from '@dt-academy/types';
 import { buildTuitionMonths, type PaymentMonthRow } from './tuitionMonths';
+import { calculateRankingsForStudent } from './rankings';
 
 type ResultRow = {
   letterGrade: string;
@@ -61,10 +62,10 @@ export function mapPortalAnnouncement(row: {
   };
 }
 
-export function mapFamilyChild(
+export async function mapFamilyChild(
   row: ProfileWithPortal,
   courses: { gradeLevel: number; section: string; academicYear: string; name: string; teacher: { name: string } }[]
-): IFamilyChild {
+): Promise<IFamilyChild> {
   const year = academicYearNumber(row.academicYear);
   const yearPayments = row.payments.filter((p) => academicYearNumber(p.academicYear) === year);
   const pending = row.payments.find((p) => p.status === 'PENDING');
@@ -75,6 +76,14 @@ export function mapFamilyChild(
       c.academicYear === row.academicYear
   );
   const approvedResults = row.results.filter((r) => r.gradeSheet.status === 'APPROVED');
+  const terms = [...new Set(approvedResults.map((r) => r.gradeSheet.term))];
+  const termRankings = await calculateRankingsForStudent(
+    row.id,
+    row.academicYear,
+    row.gradeLevel,
+    row.section,
+    terms
+  );
 
   return {
     name: row.user.name,
@@ -109,6 +118,7 @@ export function mapFamilyChild(
       letterGrade: r.letterGrade,
       totalScore: r.totalScore,
     })),
+    termRankings,
     attendance: row.attendance.map((a) => ({
       courseName: a.course.name,
       date: toIsoDate(a.date),

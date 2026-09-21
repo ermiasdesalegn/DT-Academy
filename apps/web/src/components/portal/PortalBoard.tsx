@@ -1,5 +1,4 @@
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
-import { letterFromTotal } from '@dt-academy/types';
 import type { IFamilyAttendance, IFamilyResult, IFamilyTeacher, IPortalAnnouncement } from '@dt-academy/types';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { StatCard } from '../office/StatCard';
@@ -47,7 +46,6 @@ export function PortalBoard({
   const t = useT();
   const { n, date } = useFormat();
   const avg = results.length ? results.reduce((s, r) => s + r.totalScore, 0) / results.length : null;
-  const letter = avg == null ? '—' : letterFromTotal(avg);
   const present = attendance.filter((r) => r.status === 'PRESENT').length;
   const absent = attendance.filter((r) => r.status === 'ABSENT').length;
   const markData = results.slice(0, 10).map((r) => ({ label: r.subject, count: r.totalScore }));
@@ -82,7 +80,7 @@ export function PortalBoard({
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard
           label={t('portal.statMark')}
-          value={avg == null ? '—' : t('portal.letterMark', { letter, pct: Math.round(avg) })}
+          value={avg == null ? '—' : `${Math.round(avg)}%`}
           hint={results.length ? t('portal.marksSigned') : t('portal.waitingDirector')}
         />
         <StatCard label={t('portal.statSubjects')} value={results.length ? n(results.length) : '—'} />

@@ -367,6 +367,15 @@ export interface ICreatePostRequest {
   correctAnswer?: string;
 }
 
+export interface IFamilyChildTermRanking {
+  term: number;
+  totalSum: number;
+  average: number;
+  classRank: number;
+  batchRank: number;
+  phaseTop3: boolean;
+}
+
 export interface IFamilyChild {
   name: string;
   profile: IStudentProfile;
@@ -379,6 +388,7 @@ export interface IFamilyChild {
   tuitionMonths: ITuitionMonth[];
   teachers: IFamilyTeacher[];
   results: IFamilyResult[];
+  termRankings?: IFamilyChildTermRanking[];
   attendance: IFamilyAttendance[];
 }
 
