@@ -447,6 +447,12 @@ export interface IInsights {
     approved: number;
     unlockRequested: number;
   };
+  atRiskStudents?: {
+    studentId: string;
+    studentName: string;
+    gradeLevel: number;
+    riskReason: string;
+  }[];
 }
 
 export interface IFamilyTeacher {
