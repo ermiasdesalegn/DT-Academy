@@ -27,43 +27,28 @@ export function ParentDashboard() {
   const [tab, setTab] = useState<Tab>('class');
 
   const selected = children.find((c) => c.profile._id === childId) ?? children[0];
-  // const due = selected ? dueAmount(selected.tuitionMonths ?? []) : 0;
 
   return (
-    <div className="bg-slate-50 pb-16">
-      <div className="mx-auto max-w-6xl px-4 pt-6 sm:px-6">
-        {/* {due > 0 ? (
-          <div className="mb-6 flex justify-end">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-white px-4 py-1.5 text-sm text-stone-600">{t('portal.dueEtb', { amount: due })}</span>
-              <Link
-                to="#payment"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setTab('payment');
-                }}
-                className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-white px-4 py-1.5 text-sm font-medium text-slate-900 hover:bg-slate-50"
-              >
-                <Wallet size={14} />
-                {t('common.pay')}
-              </Link>
-            </div>
-          </div>
-        ) : null} */}
-
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 pb-24 transition-colors duration-500">
+      <div className="mx-auto max-w-6xl px-4 pt-8 sm:px-6 lg:px-8">
+        
         {isLoading ? (
-          <PageLoader label={t('portal.loadChildren')} variant="portal" />
+          <div className="flex min-h-[50vh] items-center justify-center">
+            <PageLoader label={t('portal.loadChildren')} variant="portal" />
+          </div>
         ) : error ? (
-          <p className="text-sm text-red-600">{t('portal.familyError')}</p>
+          <div className="rounded-2xl border border-red-200 bg-red-50/50 p-6 text-center backdrop-blur-sm">
+            <p className="text-sm font-medium text-red-600">{t('portal.familyError')}</p>
+          </div>
         ) : children.length === 0 ? (
-          <div className="rounded-[1.5rem] border border-dashed border-stone-300 bg-white px-6 py-16 text-center">
-            <p className="text-2xl font-bold tracking-tight text-black">{t('portal.noChildren')}</p>
-            <p className="mt-2 text-sm text-stone-500">{t('portal.noChildrenHint')}</p>
+          <div className="flex min-h-[50vh] flex-col items-center justify-center rounded-[2rem] border border-dashed border-slate-300 bg-white/40 p-12 text-center shadow-2xl shadow-slate-200/50 backdrop-blur-xl transition-all duration-300 hover:bg-white/60">
+            <p className="bg-gradient-to-r from-slate-800 to-slate-500 bg-clip-text text-3xl font-bold tracking-tight text-transparent">{t('portal.noChildren')}</p>
+            <p className="mt-3 max-w-md text-sm leading-relaxed text-slate-500">{t('portal.noChildrenHint')}</p>
           </div>
         ) : (
-          <>
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
             {children.length > 1 ? (
-              <div className="mb-6 flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-3">
                 {children.map((child) => {
                   const active = (selected?.profile._id ?? '') === child.profile._id;
                   return (
@@ -71,12 +56,21 @@ export function ParentDashboard() {
                       key={child.profile._id}
                       type="button"
                       onClick={() => setChildId(child.profile._id)}
-                      className={`rounded-full px-4 py-2 text-sm font-medium ${
-                        active ? 'bg-teal-50 font-medium text-teal-900' : 'bg-white text-slate-700 hover:bg-slate-100'
+                      className={`group relative overflow-hidden rounded-full px-6 py-2.5 text-sm font-semibold transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-md ${
+                        active 
+                          ? 'bg-gradient-to-r from-teal-500 to-teal-400 text-white shadow-lg shadow-teal-500/30 ring-2 ring-teal-500/20 ring-offset-2 ring-offset-slate-50' 
+                          : 'bg-white/70 text-slate-600 shadow-sm backdrop-blur-md hover:bg-white hover:text-slate-900'
                       }`}
                     >
-                      {child.name.split(' ')[0]}
-                      {child.isFormer || child.profile.isFormer ? ` · ${t('portal.formerStudent')}` : ''}
+                      <span className="relative z-10 flex items-center gap-2">
+                        {child.name.split(' ')[0]}
+                        {child.isFormer || child.profile.isFormer ? (
+                          <span className={`text-[10px] uppercase tracking-wider ${active ? 'text-teal-100' : 'text-slate-400'}`}>
+                            {t('portal.formerStudent')}
+                          </span>
+                        ) : null}
+                      </span>
+                      {active && <div className="absolute inset-0 z-0 bg-white/20 blur-md transition-opacity duration-300" />}
                     </button>
                   );
                 })}
@@ -92,7 +86,7 @@ export function ParentDashboard() {
                 announcements={announcements}
               />
             ) : null}
-          </>
+          </div>
         )}
       </div>
     </div>
@@ -116,62 +110,67 @@ function ChildWorkspace({
   const teachers = child.teachers ?? [];
 
   return (
-    <div>
-      <PortalBoard
-        variant="parent"
-        childName={child.name}
-        isFormer={child.isFormer || child.profile.isFormer}
-        results={child.results ?? []}
-        teachers={teachers}
-        attendance={child.attendance ?? []}
-        notices={announcements}
-        // dueEtb={dueAmount(child.tuitionMonths ?? [])}
-        onOpenNotices={() => onTab('notices')}
-        onOpenAttendance={() => onTab('attendance')}
-        onOpenTeachers={() => onTab('class')}
-      />
-
-      <div className="mt-6 flex gap-1 overflow-x-auto rounded-full bg-white p-1">
-        {(
-          [
-            ['class', 'portal.tabClass'],
-            ['report', 'portal.tabReport'],
-            ['attendance', 'portal.tabAttendance'],
-            // ['payment', 'portal.tabPayment'],
-            ['notices', 'portal.tabNotices'],
-            ['memorials', 'portal.tabMemorials'],
-          ] as const
-        ).map(([id, labelKey]) => (
-          <button
-            key={id}
-            type="button"
-            onClick={() => onTab(id)}
-            className={`min-w-[5.5rem] flex-1 rounded-md px-3 py-2.5 text-sm font-medium ${
-              tab === id ? 'bg-teal-50 text-teal-900' : 'text-slate-500 hover:text-slate-900'
-            }`}
-          >
-            {t(labelKey)}
-          </button>
-        ))}
+    <div className="space-y-8">
+      <div className="overflow-hidden rounded-[2rem] border border-white/40 bg-white/60 shadow-xl shadow-slate-200/40 backdrop-blur-2xl transition-all duration-500 hover:shadow-2xl hover:shadow-slate-200/50">
+        <PortalBoard
+          variant="parent"
+          childName={child.name}
+          isFormer={child.isFormer || child.profile.isFormer}
+          results={child.results ?? []}
+          teachers={teachers}
+          attendance={child.attendance ?? []}
+          notices={announcements}
+          onOpenNotices={() => onTab('notices')}
+          onOpenAttendance={() => onTab('attendance')}
+          onOpenTeachers={() => onTab('class')}
+        />
       </div>
 
-      {tab === 'class' ? <ClassTab teachers={teachers} assigned={Boolean(child.teachers?.length)} /> : null}
-      {tab === 'report' ? (
-        <ReportTab
-          rows={(child.results ?? []).map((r) => ({
-            subject: r.subject,
-            teacherName: r.teacherName,
-            totalScore: String(r.totalScore),
-            term: t('portal.termN', { n: r.term }),
-          }))}
-          rankings={child.termRankings}
-          hasOfficial={Boolean(child.results?.length)}
-        />
-      ) : null}
-      {tab === 'attendance' ? <AttendanceTab rows={child.attendance ?? []} /> : null}
-      {/* {tab === 'payment' ? <PaymentTab child={child} /> : null} */}
-      {tab === 'notices' ? <NoticesTab phone={officePhone} announcements={announcements} /> : null}
-      {tab === 'memorials' ? <MemorialsTab studentId={child.profile._id} /> : null}
+      <div className="sticky top-4 z-10 mx-auto max-w-fit overflow-x-auto rounded-2xl border border-white/50 bg-white/70 p-1.5 shadow-lg shadow-slate-200/50 backdrop-blur-xl">
+        <div className="flex gap-1.5">
+          {(
+            [
+              ['class', 'portal.tabClass'],
+              ['report', 'portal.tabReport'],
+              ['attendance', 'portal.tabAttendance'],
+              ['notices', 'portal.tabNotices'],
+              ['memorials', 'portal.tabMemorials'],
+            ] as const
+          ).map(([id, labelKey]) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => onTab(id)}
+              className={`relative min-w-[6rem] flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-300 ease-out hover:-translate-y-0.5 ${
+                tab === id 
+                  ? 'bg-white text-teal-700 shadow-md ring-1 ring-slate-100' 
+                  : 'text-slate-500 hover:bg-white/50 hover:text-slate-800'
+              }`}
+            >
+              <span className="relative z-10">{t(labelKey)}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="animate-in fade-in slide-in-from-bottom-8 duration-500 fill-mode-both">
+        {tab === 'class' ? <ClassTab teachers={teachers} assigned={Boolean(child.teachers?.length)} /> : null}
+        {tab === 'report' ? (
+          <ReportTab
+            rows={(child.results ?? []).map((r) => ({
+              subject: r.subject,
+              teacherName: r.teacherName,
+              totalScore: String(r.totalScore),
+              term: t('portal.termN', { n: r.term }),
+            }))}
+            rankings={child.termRankings}
+            hasOfficial={Boolean(child.results?.length)}
+          />
+        ) : null}
+        {tab === 'attendance' ? <AttendanceTab rows={child.attendance ?? []} /> : null}
+        {tab === 'notices' ? <NoticesTab phone={officePhone} announcements={announcements} /> : null}
+        {tab === 'memorials' ? <MemorialsTab studentId={child.profile._id} /> : null}
+      </div>
     </div>
   );
 }
@@ -180,15 +179,17 @@ function MemorialsTab({ studentId }: { studentId: string }) {
   const t = useT();
   const list = useMemorials(studentId);
   return (
-    <div className="mt-8">
-      <p className="text-[11px] font-medium text-stone-400">{t('memorials.title')}</p>
-      <h2 className="mt-1 text-2xl font-bold tracking-tight text-black">{t('portal.tabMemorials')}</h2>
-      <p className="mt-2 text-sm text-stone-500">{t('memorials.historyHint')}</p>
-      <div className="mt-6">
+    <div className="space-y-6">
+      <div className="px-2">
+        <p className="text-xs font-bold uppercase tracking-widest text-teal-600/80">{t('memorials.title')}</p>
+        <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900">{t('portal.tabMemorials')}</h2>
+        <p className="mt-2 text-base text-slate-500">{t('memorials.historyHint')}</p>
+      </div>
+      <div className="rounded-[2rem] border border-white/40 bg-white/50 p-6 shadow-xl shadow-slate-200/40 backdrop-blur-xl">
         {list.isLoading ? (
-          <PageLoader label={t('memorials.loading')} compact />
+          <div className="py-12"><PageLoader label={t('memorials.loading')} compact /></div>
         ) : list.isError ? (
-          <p className="text-sm text-red-600">{t('memorials.loadError')}</p>
+          <div className="rounded-xl bg-red-50 p-4"><p className="text-sm font-medium text-red-600">{t('memorials.loadError')}</p></div>
         ) : (
           <MemorialFeed memorials={list.data ?? []} emptyLabel={t('memorials.emptyForStudent')} />
         )}
@@ -200,27 +201,36 @@ function MemorialsTab({ studentId }: { studentId: string }) {
 function ClassTab({ teachers, assigned }: { teachers: IFamilyTeacher[]; assigned: boolean }) {
   const t = useT();
   return (
-    <div className="mt-8">
-      <div className="flex items-end justify-between gap-4">
+    <div className="space-y-6">
+      <div className="flex items-end justify-between gap-4 px-2">
         <div>
-          <p className="text-[11px] font-medium text-stone-400">{t('portal.classEyebrow')}</p>
-          <h2 className="mt-1 text-2xl font-bold tracking-tight text-black">{t('portal.teachers')}</h2>
+          <p className="text-xs font-bold uppercase tracking-widest text-teal-600/80">{t('portal.classEyebrow')}</p>
+          <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900">{t('portal.teachers')}</h2>
         </div>
         {!assigned ? (
-          <p className="max-w-xs text-right text-xs text-stone-400">
+          <p className="max-w-xs text-right text-xs font-medium text-slate-400">
             {t('portal.namesFill')}
           </p>
         ) : null}
       </div>
-      <ul className="mt-6 grid gap-4 sm:grid-cols-2">
-        {teachers.map((t) => (
-          <li key={`${t.subject}-${t.teacherName}`} className="flex items-center gap-4 rounded-[1.25rem] bg-white p-4 shadow-sm">
-            <Avatar className="h-12 w-12">
-              <AvatarFallback className="bg-[#1A2B3C] text-sm text-white">{initials(t.teacherName)}</AvatarFallback>
-            </Avatar>
-            <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-400">{t.subject}</p>
-              <p className="truncate font-medium text-stone-900">{t.teacherName}</p>
+      <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {teachers.map((teacher, i) => (
+          <li 
+            key={`${teacher.subject}-${teacher.teacherName}`} 
+            className="group relative overflow-hidden rounded-[1.5rem] border border-white/60 bg-white/70 p-5 shadow-lg shadow-slate-200/40 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:bg-white hover:shadow-xl hover:shadow-slate-200/60"
+            style={{ animationDelay: `${i * 100}ms` }}
+          >
+            <div className="absolute -right-4 -top-4 h-24 w-24 rounded-full bg-gradient-to-br from-teal-100 to-teal-50 opacity-50 blur-2xl transition-opacity duration-300 group-hover:opacity-100" />
+            <div className="relative flex items-center gap-4">
+              <Avatar className="h-14 w-14 border-2 border-white shadow-sm transition-transform duration-300 group-hover:scale-105">
+                <AvatarFallback className="bg-gradient-to-br from-slate-800 to-slate-700 text-sm font-bold text-white">
+                  {initials(teacher.teacherName)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold uppercase tracking-wider text-teal-600/70">{teacher.subject}</p>
+                <p className="truncate text-lg font-bold text-slate-800">{teacher.teacherName}</p>
+              </div>
             </div>
           </li>
         ))}
@@ -229,98 +239,41 @@ function ClassTab({ teachers, assigned }: { teachers: IFamilyTeacher[]; assigned
   );
 }
 
-
-// function PaymentTab({ child }: { child: IFamilyChild }) {
-//   const t = useT();
-//   const { n, month } = useFormat();
-//   const rows = child.tuitionMonths ?? [];
-//   const unpaid = rows.filter((r) => r.status === 'UNPAID');
-//   const pending = rows.filter((r) => r.status === 'PENDING');
-//   const total = unpaid.reduce((sum, r) => sum + r.totalDueEtb, 0);
-// 
-//   return (
-//     <div className="mt-8">
-//       <p className="text-[11px] font-medium text-stone-400">{t('portal.tuition')}</p>
-//       <h2 className="mt-1 text-2xl font-bold tracking-tight text-black">{t('portal.payments')}</h2>
-//       <p className="mt-2 text-sm text-stone-500">
-//         {unpaid.length
-//           ? t('portal.dueHint', { amount: total })
-//           : pending.length
-//             ? t('portal.pendingHint')
-//             : t('portal.nothingOutstanding')}
-//       </p>
-// 
-//       <ul className="mt-6 overflow-hidden rounded-[1.5rem] bg-white shadow-sm">
-//         {rows.map((row) => (
-//           <li
-//             key={row.month}
-//             className="flex items-center justify-between border-b border-stone-100 px-5 py-3.5 last:border-0"
-//           >
-//             <div>
-//               <p className="text-sm font-medium text-stone-800">{month(row.month)}</p>
-//               <p className="text-xs text-stone-400">
-//                 {n(row.baseEtb)} ETB
-//                 {row.penaltyEtb > 0 ? ` ${t('portal.lateAdd', { amount: row.penaltyEtb })}` : ''}
-//               </p>
-//             </div>
-//             <span
-//               className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-//                 row.status === 'PAID'
-//                   ? 'bg-stone-100 text-black'
-//                   : row.status === 'UNPAID'
-//                     ? 'bg-red-50 text-red-800'
-//                     : row.status === 'PENDING'
-//                       ? 'bg-amber-50 text-amber-900'
-//                       : 'bg-stone-100 text-stone-500'
-//               }`}
-//             >
-//               {row.status === 'PAID'
-//                 ? t('portal.paid')
-//                 : row.status === 'UNPAID'
-//                   ? t('portal.due')
-//                   : row.status === 'PENDING'
-//                     ? t('portal.pending')
-//                     : t('portal.upcoming')}
-//             </span>
-//           </li>
-//         ))}
-//       </ul>
-// 
-//       {unpaid.length ? (
-//         <Link
-//           to={`/portal/pay?student=${child.profile._id}`}
-//           className="mt-6 inline-flex items-center gap-2 rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white"
-//         >
-//           <Wallet size={16} />
-//           {t('portal.payAmount', { amount: total })}
-//         </Link>
-//       ) : null}
-//     </div>
-//   );
-// }
-
 function AttendanceTab({ rows }: { rows: IFamilyAttendance[] }) {
   const t = useT();
   const { date } = useFormat();
   return (
-    <div className="mt-8">
-      <p className="text-[11px] font-medium text-stone-400">{t('portal.roll')}</p>
-      <h2 className="mt-1 text-2xl font-bold tracking-tight text-black">{t('portal.attendance')}</h2>
-      <p className="mt-2 text-sm text-stone-500">{t('portal.attendanceHint')}</p>
+    <div className="space-y-6">
+      <div className="px-2">
+        <p className="text-xs font-bold uppercase tracking-widest text-teal-600/80">{t('portal.roll')}</p>
+        <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900">{t('portal.attendance')}</h2>
+        <p className="mt-2 text-base text-slate-500">{t('portal.attendanceHint')}</p>
+      </div>
+      
       {rows.length === 0 ? (
-        <p className="mt-6 text-sm text-stone-500">{t('portal.noRoll')}</p>
+        <div className="rounded-[2rem] border border-dashed border-slate-300 bg-white/40 p-12 text-center backdrop-blur-md">
+          <p className="text-base font-medium text-slate-500">{t('portal.noRoll')}</p>
+        </div>
       ) : (
-        <ul className="mt-6 divide-y divide-stone-100 overflow-hidden rounded-[1.25rem] bg-white shadow-sm">
-          {rows.map((row) => (
-            <li key={`${row.courseName}-${row.date}`} className="flex items-center justify-between px-5 py-3 text-sm">
-              <div>
-                <p className="font-medium text-stone-800">{row.courseName}</p>
-                <p className="text-xs text-stone-400">{date(row.date)}</p>
-              </div>
-              <span className="text-xs font-medium text-stone-500">{attendanceStatusLabel(row.status)}</span>
-            </li>
-          ))}
-        </ul>
+        <div className="overflow-hidden rounded-[2rem] border border-white/60 bg-white/70 shadow-xl shadow-slate-200/40 backdrop-blur-xl">
+          <ul className="divide-y divide-slate-100/50">
+            {rows.map((row) => (
+              <li key={`${row.courseName}-${row.date}`} className="flex items-center justify-between px-6 py-4 transition-colors duration-200 hover:bg-white/50">
+                <div>
+                  <p className="text-base font-bold text-slate-800">{row.courseName}</p>
+                  <p className="mt-0.5 text-xs font-medium text-slate-500">{date(row.date)}</p>
+                </div>
+                <span className={`rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider shadow-sm ${
+                  row.status === 'PRESENT' ? 'bg-green-100 text-green-800' :
+                  row.status === 'ABSENT' ? 'bg-red-100 text-red-800' :
+                  'bg-yellow-100 text-yellow-800'
+                }`}>
+                  {attendanceStatusLabel(row.status)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
     </div>
   );
@@ -330,33 +283,45 @@ function NoticesTab({ phone, announcements }: { phone: string; announcements: IP
   const t = useT();
   const { date } = useFormat();
   return (
-    <div className="mt-8">
-      <p className="text-[11px] font-medium text-stone-400">{t('portal.school')}</p>
-      <h2 className="mt-1 text-2xl font-bold tracking-tight text-black">{t('portal.notices')}</h2>
+    <div className="space-y-6">
+      <div className="px-2">
+        <p className="text-xs font-bold uppercase tracking-widest text-teal-600/80">{t('portal.school')}</p>
+        <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-slate-900">{t('portal.notices')}</h2>
+      </div>
+
       {announcements.length === 0 ? (
-        <p className="mt-6 text-sm text-stone-500">{t('portal.noNotices')}</p>
+        <div className="rounded-[2rem] border border-dashed border-slate-300 bg-white/40 p-12 text-center backdrop-blur-md">
+          <p className="text-base font-medium text-slate-500">{t('portal.noNotices')}</p>
+        </div>
       ) : (
-        <ul className="mt-6 grid gap-4 md:grid-cols-2">
-          {announcements.map((item) => (
-            <li key={item._id} className="rounded-[1.25rem] bg-white p-5 shadow-sm">
-              <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-400">
-                {date(item.createdAt)}
-              </p>
-              <p className="mt-1 font-medium text-stone-900">{item.title}</p>
-              <p className="mt-2 whitespace-pre-wrap text-sm text-stone-600">{item.content}</p>
+        <ul className="grid gap-5 md:grid-cols-2">
+          {announcements.map((item, i) => (
+            <li 
+              key={item._id} 
+              className="group relative flex flex-col justify-between overflow-hidden rounded-[2rem] border border-white/60 bg-white/70 p-6 shadow-lg shadow-slate-200/40 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:bg-white hover:shadow-xl hover:shadow-slate-200/60"
+              style={{ animationDelay: `${i * 100}ms` }}
+            >
+              <div className="absolute right-0 top-0 h-32 w-32 -translate-y-16 translate-x-16 rounded-full bg-gradient-to-bl from-teal-100 to-transparent opacity-50 blur-2xl transition-opacity duration-300 group-hover:opacity-100" />
+              <div className="relative">
+                <div className="flex items-center gap-2">
+                  <span className="inline-block h-2 w-2 rounded-full bg-teal-500 shadow-sm shadow-teal-500/50 animate-pulse" />
+                  <p className="text-xs font-bold uppercase tracking-widest text-slate-500">
+                    {date(item.createdAt)}
+                  </p>
+                </div>
+                <h3 className="mt-3 text-xl font-bold leading-tight text-slate-900">{item.title}</h3>
+                <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-slate-600">{item.content}</p>
+              </div>
             </li>
           ))}
         </ul>
       )}
-      <p className="mt-6 text-sm text-stone-500">{t('portal.pickup', { phone })}</p>
+      <div className="mt-8 rounded-2xl border border-teal-100 bg-teal-50/50 p-4 text-center backdrop-blur-sm">
+        <p className="text-sm font-medium text-teal-800">{t('portal.pickup', { phone })}</p>
+      </div>
     </div>
   );
 }
-
-// function dueAmount(rows: ITuitionMonth[]) {
-//   const unpaid = rows.filter((r) => r.status === 'UNPAID');
-//   return unpaid.reduce((sum, r) => sum + r.totalDueEtb, 0);
-// }
 
 function initials(name: string) {
   return name
