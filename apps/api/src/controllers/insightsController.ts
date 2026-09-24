@@ -115,5 +115,53 @@ export async function getInsights(_req: Request, res: Response): Promise<void> {
     },
   };
 
+  try {
+    const absentRecords = await prisma.attendance.groupBy({
+      by: ['studentId'],
+      where: { status: 'ABSENT' },
+      _count: { _all: true }
+    });
+    const highAbsenceIds = absentRecords.filter(r => r._count._all >= 3).map(r => r.studentId);
+    
+    const badGrades = await prisma.studentResult.findMany({
+      where: { totalScore: { lt: 50 } },
+      select: { studentId: true },
+      distinct: ['studentId']
+    });
+    const badGradeIds = badGrades.map(g => g.studentId);
+    
+    const atRiskIds = Array.from(new Set([...highAbsenceIds, ...badGradeIds]));
+    
+    if (atRiskIds.length > 0) {
+      const atRiskProfiles = await prisma.studentProfile.findMany({
+        where: { id: { in: atRiskIds }, isFormer: false },
+        include: { user: true }
+      });
+      
+      body.atRiskStudents = atRiskProfiles.map(p => {
+        let reason = '';
+        if (highAbsenceIds.includes(p.id) && badGradeIds.includes(p.id)) {
+          reason = 'High absences & failing grades';
+        } else if (highAbsenceIds.includes(p.id)) {
+          reason = 'High absences (\u2265 3)';
+        } else {
+          reason = 'Failing one or more classes (< 50%)';
+        }
+        
+        return {
+          studentId: p.id,
+          studentName: p.user.name,
+          gradeLevel: p.gradeLevel,
+          riskReason: reason
+        };
+      });
+    } else {
+      body.atRiskStudents = [];
+    }
+  } catch (err) {
+    // Graceful fallback if any query fails
+    body.atRiskStudents = [];
+  }
+
   res.json(body);
 }
