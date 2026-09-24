@@ -91,42 +91,41 @@ export function StaffDashboard() {
               )}
             </section>
 
-            {/* <section className="rounded-lg border border-slate-200 bg-white p-6">
-              <h2 className="text-sm font-semibold text-slate-900">{t('office.recentTuition')}</h2>
-              <p className="mt-1 text-sm text-slate-500">{t('office.recentTuitionHint')}</p>
-              {payments.isLoading ? (
-                <PageLoader label={t('office.paymentsLoading')} compact />
-              ) : !payments.data?.length ? (
-                <p className="mt-5 text-sm text-slate-500">{t('office.noPendingReceipts')}</p>
-              ) : (
-                <ul className="mt-5 divide-y divide-slate-100">
-                  {payments.data.slice(0, 8).map((row) => (
-                    <li key={row._id} className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-medium text-slate-900">{row.parentName}</p>
-                        <p className="text-xs text-slate-500">
-                          ETB {n(row.amount)} · {methodLabel(row.method)}
-                        </p>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-2">
-                        <Badge className="border-0 bg-amber-100 font-medium text-amber-800 hover:bg-amber-100">
-                          {t('office.pending')}
-                        </Badge>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          disabled={verify.isPending}
-                          onClick={() => verify.mutate(row._id)}
-                        >
-                          {t('office.verify')}
-                        </Button>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </section> */}
+            {d && d.atRiskStudents && (
+              <section className="rounded-lg border border-red-200 bg-white p-6 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-sm font-semibold text-red-700">Early Warning System</h2>
+                    <p className="mt-1 text-sm text-slate-500">Students flagged for academic or attendance risks.</p>
+                  </div>
+                  <span className="inline-flex items-center justify-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-800">
+                    {d.atRiskStudents.length} {d.atRiskStudents.length === 1 ? 'Student' : 'Students'}
+                  </span>
+                </div>
+                
+                {d.atRiskStudents.length === 0 ? (
+                  <div className="mt-5 rounded-lg border border-dashed border-slate-200 p-6 text-center">
+                    <p className="text-sm text-slate-500">No students are currently flagged as at-risk.</p>
+                  </div>
+                ) : (
+                  <ul className="mt-5 max-h-60 overflow-y-auto divide-y divide-slate-100 pr-2">
+                    {d.atRiskStudents.map((student) => (
+                      <li key={student.studentId} className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium text-slate-900">{student.studentName}</p>
+                          <p className="text-xs font-medium text-red-600">
+                            {student.riskReason}
+                          </p>
+                        </div>
+                        <span className="shrink-0 text-xs text-slate-500">
+                          Grade {student.gradeLevel}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </section>
+            )}
           </div>
         </>
       )}
