@@ -1,9 +1,10 @@
 import { useState } from 'react';
 // import { Link } from 'react-router-dom';
-// import { Wallet } from 'lucide-react';
+import { Megaphone } from 'lucide-react';
 import type { IFamilyAttendance, IFamilyChild, IFamilyTeacher, IPortalAnnouncement } from '@dt-academy/types';
 import { DEFAULT_SITE_CONTENT } from '@dt-academy/types';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { PortalBoard } from '../components/portal/PortalBoard';
 import { ReportTab } from '../components/portal/ReportTab';
 import { MemorialFeed } from '../components/memorials/MemorialFeed';
@@ -27,11 +28,29 @@ export function ParentDashboard() {
   const [tab, setTab] = useState<Tab>('class');
 
   const selected = children.find((c) => c.profile._id === childId) ?? children[0];
+  
+  // Find latest broadcast (created within the last 7 days)
+  const latestBroadcast = announcements.find((a) => {
+    const diff = new Date().getTime() - new Date(a.createdAt).getTime();
+    return diff < 7 * 24 * 60 * 60 * 1000;
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 pb-24 transition-colors duration-500">
       <div className="mx-auto max-w-6xl px-4 pt-8 sm:px-6 lg:px-8">
         
+        {latestBroadcast && (
+          <div className="mb-6 animate-in fade-in slide-in-from-top-4 duration-500">
+            <Alert className="border-teal-200 bg-teal-50 shadow-md shadow-teal-100/50">
+              <Megaphone className="h-5 w-5 text-teal-600" />
+              <AlertTitle className="text-teal-900 font-bold">{latestBroadcast.title}</AlertTitle>
+              <AlertDescription className="text-teal-800 line-clamp-2 mt-1">
+                {latestBroadcast.content}
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
+
         {isLoading ? (
           <div className="flex min-h-[50vh] items-center justify-center">
             <PageLoader label={t('portal.loadChildren')} variant="portal" />
