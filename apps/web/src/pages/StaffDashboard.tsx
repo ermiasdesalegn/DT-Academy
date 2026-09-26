@@ -1,20 +1,13 @@
-// import { Badge } from '@/components/ui/badge';
-// import { Button } from '@/components/ui/button';
 import { EnrollmentCharts } from '../components/office/InsightsCharts';
 import { PageLoader } from '../components/layouts/PageLoader';
 import { StatCard } from '../components/office/StatCard';
 import { useInsights } from '../hooks/useInsights';
 import { useFormat } from '../hooks/useFormat';
 import { useT } from '../hooks/useT';
-// import { usePayments, useVerifyPayment } from '../hooks/usePayments';
-// import { methodLabel } from '../lib/labels';
-
 export function StaffDashboard() {
   const t = useT();
   const { n } = useFormat();
-  // const payments = usePayments('PENDING');
   const insights = useInsights();
-  // const verify = useVerifyPayment();
 
   const d = insights.data;
   const students = d?.students;
@@ -95,17 +88,17 @@ export function StaffDashboard() {
               <section className="rounded-lg border border-red-200 bg-white p-6 shadow-sm">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-sm font-semibold text-red-700">Early Warning System</h2>
-                    <p className="mt-1 text-sm text-slate-500">Students flagged for academic or attendance risks.</p>
+                    <h2 className="text-sm font-semibold text-red-700">{t('office.earlyWarning')}</h2>
+                    <p className="mt-1 text-sm text-slate-500">{t('office.earlyWarningHint')}</p>
                   </div>
                   <span className="inline-flex items-center justify-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-semibold text-red-800">
-                    {d.atRiskStudents.length} {d.atRiskStudents.length === 1 ? 'Student' : 'Students'}
+                    {d.atRiskStudents.length} {t('office.studentsCount', { count: d.atRiskStudents.length })}
                   </span>
                 </div>
                 
                 {d.atRiskStudents.length === 0 ? (
                   <div className="mt-5 rounded-lg border border-dashed border-slate-200 p-6 text-center">
-                    <p className="text-sm text-slate-500">No students are currently flagged as at-risk.</p>
+                    <p className="text-sm text-slate-500">{t('office.noAtRisk')}</p>
                   </div>
                 ) : (
                   <ul className="mt-5 max-h-60 overflow-y-auto divide-y divide-slate-100 pr-2">
@@ -118,7 +111,7 @@ export function StaffDashboard() {
                           </p>
                         </div>
                         <span className="shrink-0 text-xs text-slate-500">
-                          Grade {student.gradeLevel}
+                          {t('office.gradeN', { n: student.gradeLevel })}
                         </span>
                       </li>
                     ))}
