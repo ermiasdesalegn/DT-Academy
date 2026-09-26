@@ -1,5 +1,4 @@
-import { useState } from 'react';
-// import { Link } from 'react-router-dom';
+import { useState, useMemo } from 'react';
 import { Megaphone } from 'lucide-react';
 import type { IFamilyAttendance, IFamilyChild, IFamilyTeacher, IPortalAnnouncement } from '@dt-academy/types';
 import { DEFAULT_SITE_CONTENT } from '@dt-academy/types';
@@ -16,7 +15,7 @@ import { useFormat } from '../hooks/useFormat';
 import { useT } from '../hooks/useT';
 import { attendanceStatusLabel } from '../lib/labels';
 
-type Tab = 'class' | 'report' | 'attendance' | 'payment' | 'notices' | 'memorials';
+type Tab = 'class' | 'report' | 'attendance' | 'notices' | 'memorials';
 
 export function ParentDashboard() {
   const t = useT();
@@ -27,13 +26,17 @@ export function ParentDashboard() {
   const [childId, setChildId] = useState<string | null>(null);
   const [tab, setTab] = useState<Tab>('class');
 
-  const selected = children.find((c) => c.profile._id === childId) ?? children[0];
+  const selected = useMemo(() => {
+    return children.find((c) => c.profile._id === childId) ?? children[0];
+  }, [children, childId]);
   
   // Find latest broadcast (created within the last 7 days)
-  const latestBroadcast = announcements.find((a) => {
-    const diff = new Date().getTime() - new Date(a.createdAt).getTime();
-    return diff < 7 * 24 * 60 * 60 * 1000;
-  });
+  const latestBroadcast = useMemo(() => {
+    return announcements.find((a) => {
+      const diff = new Date().getTime() - new Date(a.createdAt).getTime();
+      return diff < 7 * 24 * 60 * 60 * 1000;
+    });
+  }, [announcements]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 pb-24 transition-colors duration-500">
@@ -67,13 +70,15 @@ export function ParentDashboard() {
         ) : (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out">
             {children.length > 1 ? (
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-3" role="tablist" aria-label="Select Child">
                 {children.map((child) => {
                   const active = (selected?.profile._id ?? '') === child.profile._id;
                   return (
                     <button
                       key={child.profile._id}
                       type="button"
+                      role="tab"
+                      aria-selected={active}
                       onClick={() => setChildId(child.profile._id)}
                       className={`group relative overflow-hidden rounded-full px-6 py-2.5 text-sm font-semibold transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-md ${
                         active 
@@ -146,7 +151,7 @@ function ChildWorkspace({
       </div>
 
       <div className="sticky top-4 z-10 mx-auto max-w-fit overflow-x-auto rounded-2xl border border-white/50 bg-white/70 p-1.5 shadow-lg shadow-slate-200/50 backdrop-blur-xl">
-        <div className="flex gap-1.5">
+        <div className="flex gap-1.5" role="tablist" aria-label="Workspace Tabs">
           {(
             [
               ['class', 'portal.tabClass'],
@@ -159,6 +164,8 @@ function ChildWorkspace({
             <button
               key={id}
               type="button"
+              role="tab"
+              aria-selected={tab === id}
               onClick={() => onTab(id)}
               className={`relative min-w-[6rem] flex-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-300 ease-out hover:-translate-y-0.5 ${
                 tab === id 
@@ -172,7 +179,7 @@ function ChildWorkspace({
         </div>
       </div>
 
-      <div className="animate-in fade-in slide-in-from-bottom-8 duration-500 fill-mode-both">
+      <div className="animate-in fade-in slide-in-from-bottom-8 duration-500 fill-mode-both" role="tabpanel">
         {tab === 'class' ? <ClassTab teachers={teachers} assigned={Boolean(child.teachers?.length)} /> : null}
         {tab === 'report' ? (
           <ReportTab
