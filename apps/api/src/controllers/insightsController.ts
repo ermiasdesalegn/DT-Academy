@@ -116,18 +116,20 @@ export async function getInsights(_req: Request, res: Response): Promise<void> {
   };
 
   try {
-    const absentRecords = await prisma.attendance.groupBy({
-      by: ['studentId'],
-      where: { status: 'ABSENT' },
-      _count: { _all: true }
-    });
+    const [absentRecords, badGrades] = await Promise.all([
+      prisma.attendance.groupBy({
+        by: ['studentId'],
+        where: { status: 'ABSENT' },
+        _count: { _all: true }
+      }),
+      prisma.studentResult.findMany({
+        where: { totalScore: { lt: 50 } },
+        select: { studentId: true },
+        distinct: ['studentId']
+      })
+    ]);
+
     const highAbsenceIds = absentRecords.filter(r => r._count._all >= 3).map(r => r.studentId);
-    
-    const badGrades = await prisma.studentResult.findMany({
-      where: { totalScore: { lt: 50 } },
-      select: { studentId: true },
-      distinct: ['studentId']
-    });
     const badGradeIds = badGrades.map(g => g.studentId);
     
     const atRiskIds = Array.from(new Set([...highAbsenceIds, ...badGradeIds]));
